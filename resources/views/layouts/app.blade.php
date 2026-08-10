@@ -23,6 +23,7 @@
                         <span class="font-bold text-lg text-gray-800">Kuna Patisserie Finance</span>
                         <nav class="flex gap-4">
                             <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900">Dashboard</a>
+                            <a href="{{ route('accounts.index') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900">Accounts</a>
                         </nav>
                     </div>
                     @auth

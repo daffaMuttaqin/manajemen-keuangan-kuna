@@ -8,18 +8,18 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 
 ## Current project state
 
-- Project status: Phase 1 — Authentication and Foundation completed.
-- Current phase: Phase 1 — Foundation (Completed)
-- Current task: Phase 1 Implementation finished.
+- Project status: Phase 2 — Accounts and Opening Balance completed.
+- Current phase: Phase 2 — Accounts (Completed)
+- Current task: Phase 2 Implementation finished.
 - Laravel status: Configured & operational (v13.24.0).
 - MySQL status: Configured (`db-manajemen-kuna` DB, `finance-testing` test DB).
 - Authentication status: AuthenticatedSessionController, Login view, Logout, and protected route implemented.
-- Test suite status: 6 focused feature tests passing.
+- Test suite status: 16 focused feature tests passing (6 Auth, 10 Account).
 
 ## Completed phases
 
 - [x] Phase 1 — Foundation
-- [ ] Phase 2 — Accounts
+- [x] Phase 2 — Accounts
 - [ ] Phase 3 — Menu
 - [ ] Phase 4 — Income and Expense
 - [ ] Phase 5 — Payment Logic
@@ -51,14 +51,14 @@ None.
 
 ## AI handoff notes
 
-- Completed task: Phase 1 Authentication and Foundation.
+- Completed task: Phase 2 Accounts and Opening Balance.
 - Files created/modified:
-  - `app/Http/Controllers/Auth/AuthenticatedSessionController.php`
-  - `routes/web.php`
+  - `database/migrations/*_create_accounts_table.php`
+  - `app/Models/Account.php`
+  - `app/Services/AccountBalanceService.php`
+  - `app/Livewire/Accounts/ManageAccounts.php`
+  - `resources/views/livewire/accounts/manage-accounts.blade.php`
   - `resources/views/layouts/app.blade.php`
-  - `resources/views/auth/login.blade.php`
-  - `resources/views/dashboard.blade.php`
-  - `tests/Feature/AuthenticationTest.php`
-  - `.env` & `.env.example`
-  - `phpunit.xml`
-- Next task: Phase 2 — Accounts (Wait for user instruction, do not start Phase 2 automatically).
+  - `routes/web.php`
+  - `tests/Feature/AccountTest.php`
+- Next task: Phase 3 — Menu (Wait for user instruction, do not start Phase 3 automatically).

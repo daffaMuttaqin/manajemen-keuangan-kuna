@@ -17,4 +17,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+    Route::get('/accounts', \App\Livewire\Accounts\ManageAccounts::class)->name('accounts.index');
 });
