@@ -24,6 +24,7 @@
                         <nav class="flex gap-4">
                             <a href="{{ route('dashboard') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900">Dashboard</a>
                             <a href="{{ route('accounts.index') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900">Accounts</a>
+                            <a href="{{ route('menu.index') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900">Menu</a>
                         </nav>
                     </div>
                     @auth

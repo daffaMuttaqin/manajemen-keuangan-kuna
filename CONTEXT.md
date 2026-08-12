@@ -8,19 +8,19 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 
 ## Current project state
 
-- Project status: Phase 2 — Accounts and Opening Balance completed.
-- Current phase: Phase 2 — Accounts (Completed)
-- Current task: Phase 2 Implementation finished.
+- Project status: Phase 3 — Menu Management completed.
+- Current phase: Phase 3 — Menu (Completed)
+- Current task: Phase 3 Implementation finished.
 - Laravel status: Configured & operational (v13.24.0).
 - MySQL status: Configured (`db-manajemen-kuna` DB, `finance-testing` test DB).
 - Authentication status: AuthenticatedSessionController, Login view, Logout, and protected route implemented.
-- Test suite status: 16 focused feature tests passing (6 Auth, 10 Account).
+- Test suite status: 26 focused feature tests passing (6 Auth, 10 Account, 10 Menu).
 
 ## Completed phases
 
 - [x] Phase 1 — Foundation
 - [x] Phase 2 — Accounts
-- [ ] Phase 3 — Menu
+- [x] Phase 3 — Menu
 - [ ] Phase 4 — Income and Expense
 - [ ] Phase 5 — Payment Logic
 - [ ] Phase 6 — Cancellation and Editing
@@ -38,6 +38,8 @@ None.
 ## Last verified tests
 
 - `tests/Feature/AuthenticationTest.php` (6 tests passed, 16 assertions).
+- `tests/Feature/AccountTest.php` (10 tests passed, 21 assertions).
+- `tests/Feature/MenuTest.php` (10 tests passed, 27 assertions).
 
 ## Known issues
 
@@ -47,18 +49,19 @@ None.
 
 - Auth Controller: Standard Laravel-native `AuthenticatedSessionController` handling login view, store authentication, and logout session destruction.
 - Database: MySQL configured for both main application database (`db-manajemen-kuna`) and test database (`finance-testing`).
-- UI: Clean minimal login page, base authenticated layout (`layouts.app`), and dashboard placeholder (`/dashboard`).
+- UI: Clean minimal login page, base authenticated layout (`layouts.app`), dashboard placeholder (`/dashboard`), Accounts management (`/accounts`), and Menu management (`/menu`).
+- Historical Price principle: `current_price` on `MenuItem` represents only the current price. Future transaction modules will store their own price snapshot upon creation.
 
 ## AI handoff notes
 
-- Completed task: Phase 2 Accounts and Opening Balance.
+- Completed task: Phase 3 Menu Management.
 - Files created/modified:
-  - `database/migrations/*_create_accounts_table.php`
-  - `app/Models/Account.php`
-  - `app/Services/AccountBalanceService.php`
-  - `app/Livewire/Accounts/ManageAccounts.php`
-  - `resources/views/livewire/accounts/manage-accounts.blade.php`
+  - `database/migrations/2026_08_12_051625_create_menu_items_table.php`
+  - `app/Models/MenuItem.php`
+  - `app/Livewire/Menu/ManageMenu.php`
+  - `resources/views/livewire/menu/manage-menu.blade.php`
   - `resources/views/layouts/app.blade.php`
   - `routes/web.php`
-  - `tests/Feature/AccountTest.php`
-- Next task: Phase 3 — Menu (Wait for user instruction, do not start Phase 3 automatically).
+  - `tests/Feature/MenuTest.php`
+  - `CONTEXT.md`
+- Next task: Phase 4 — Income and Expense (Wait for user instruction, do not start Phase 4 automatically).

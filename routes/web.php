@@ -18,4 +18,6 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
     Route::get('/accounts', \App\Livewire\Accounts\ManageAccounts::class)->name('accounts.index');
+    Route::get('/menu', \App\Livewire\Menu\ManageMenu::class)->name('menu.index');
 });
+
