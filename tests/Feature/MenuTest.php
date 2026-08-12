@@ -210,4 +210,83 @@ class MenuTest extends TestCase
             ->assertSee('Eclair')
             ->assertDontSee('Espresso');
     }
+
+    public function test_guest_cannot_access_menu_page(): void
+
+    {
+        $response = $this->get('/menu');
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_active_and_inactive_status_filters_work(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        MenuItem::create([
+            'name' => 'Active Cake',
+            'category' => 'Cake',
+            'current_price' => 45000,
+            'is_active' => true,
+        ]);
+
+        MenuItem::create([
+            'name' => 'Inactive Tart',
+            'category' => 'Pastry',
+            'current_price' => 30000,
+            'is_active' => false,
+        ]);
+
+        Livewire::test(ManageMenu::class)
+            ->set('statusFilter', 'active')
+            ->assertSee('Active Cake')
+            ->assertDontSee('Inactive Tart');
+
+        Livewire::test(ManageMenu::class)
+            ->set('statusFilter', 'inactive')
+            ->assertSee('Inactive Tart')
+            ->assertDontSee('Active Cake');
+    }
+
+    public function test_menu_items_pagination_works(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        for ($i = 1; $i <= 15; $i++) {
+            MenuItem::create([
+                'name' => "Item {$i}",
+                'category' => 'Category',
+                'current_price' => 10000 + $i,
+                'is_active' => true,
+            ]);
+        }
+
+        Livewire::test(ManageMenu::class)
+            ->assertSee('Item 15')
+            ->call('gotoPage', 2)
+            ->assertSee('Item 1');
+    }
+
+    public function test_invalid_edit_input_fails_validation(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $item = MenuItem::create([
+            'name' => 'Valid Croissant',
+            'category' => 'Pastry',
+            'current_price' => 25000,
+            'is_active' => true,
+        ]);
+
+        Livewire::test(ManageMenu::class)
+            ->call('editMenuItem', $item->id)
+            ->set('name', '')
+            ->set('current_price', '-100')
+            ->call('saveMenuItem')
+            ->assertHasErrors(['name', 'current_price']);
+    }
 }
+

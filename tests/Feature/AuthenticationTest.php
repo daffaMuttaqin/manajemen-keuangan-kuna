@@ -61,8 +61,9 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard');
 
         $response->assertStatus(200);
-        $response->assertSee('Dashboard Placeholder');
+        $response->assertSee('Financial Overview');
     }
+
 
     public function test_logout_invalidates_the_session(): void
     {
@@ -96,5 +97,15 @@ class AuthenticationTest extends TestCase
 
         $this->assertEquals(1, User::where('email', 'admin@gmail.com')->count());
     }
+
+    public function test_authenticated_user_is_redirected_when_visiting_login_page(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/login');
+
+        $response->assertRedirect(route('dashboard'));
+    }
 }
+
 

@@ -14,9 +14,8 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+
     Route::get('/accounts', \App\Livewire\Accounts\ManageAccounts::class)->name('accounts.index');
     Route::get('/menu', \App\Livewire\Menu\ManageMenu::class)->name('menu.index');
 });

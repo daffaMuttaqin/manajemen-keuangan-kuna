@@ -8,13 +8,13 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 
 ## Current project state
 
-- Project status: Phase 3 — Menu Management completed. Development Admin Seeder added.
-- Current phase: Phase 3 — Menu (Completed)
-- Current task: Development Admin Seeder added.
+- Project status: Menu Management implementation refined and completed.
+- Current phase: Phase 3 — Menu (Completed & Refined with Dark UI).
+- Current task: Menu Management finished.
 - Laravel status: Configured & operational (v13.24.0).
 - MySQL status: Configured (`db-manajemen-kuna` DB, `finance-testing` test DB).
 - Authentication status: AuthenticatedSessionController, Login view, Logout, protected routes, and development admin seeder implemented.
-- Test suite status: 27 focused feature tests passing (7 Auth/Seeder, 10 Account, 10 Menu).
+- Test suite status: 38 feature tests passing (7 Auth/Seeder, 10 Account, 14 Menu, 5 Dashboard, 2 Example/Foundation).
 
 ## Completed phases
 
@@ -26,7 +26,7 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 - [ ] Phase 6 — Cancellation and Editing
 - [ ] Phase 7 — Transfers
 - [ ] Phase 8 — Loans, Receivables, Payables, Assets
-- [ ] Phase 9 — Dashboard
+- [x] Dashboard UI (Phase 9 UI shell ready)
 - [ ] Phase 10 — Reports and CSV
 - [ ] Phase 11 — Audit Trail
 - [ ] Phase 12 — Stabilization
@@ -37,9 +37,11 @@ None.
 
 ## Last verified tests
 
-- `tests/Feature/AuthenticationTest.php` (7 tests passed, 21 assertions).
-- `tests/Feature/AccountTest.php` (10 tests passed, 21 assertions).
-- `tests/Feature/MenuTest.php` (10 tests passed, 27 assertions).
+- `tests/Feature/AuthenticationTest.php` (7 tests passed).
+- `tests/Feature/AccountTest.php` (10 tests passed).
+- `tests/Feature/MenuTest.php` (14 tests passed).
+- `tests/Feature/DashboardTest.php` (5 tests passed).
+- `tests/Feature/ExampleTest.php` (2 tests passed).
 
 ## Known issues
 
@@ -47,18 +49,16 @@ None.
 
 ## Decisions made during implementation
 
-- Auth Controller: Standard Laravel-native `AuthenticatedSessionController` handling login view, store authentication, and logout session destruction.
-- Development Admin Seeder: `DatabaseSeeder` uses `User::updateOrCreate()` for idempotent creation of local admin user (`admin@gmail.com` / `12345678`).
-- Database: MySQL configured for both main application database (`db-manajemen-kuna`) and test database (`finance-testing`).
-- UI: Clean minimal login page, base authenticated layout (`layouts.app`), dashboard placeholder (`/dashboard`), Accounts management (`/accounts`), and Menu management (`/menu`).
-- Historical Price principle: `current_price` on `MenuItem` represents only the current price. Future transaction modules will store their own price snapshot upon creation.
+- Menu Management: Uses dark theme visual design tokens (`#16130e` background, `#e9c176` primary gold, `#231f1a` surfaces, `#4e4639` borders) embedded in `layouts.app` shell. Sourced 100% from actual `MenuItem` database model fields (`id`, `name`, `category`, `current_price`, `is_active`). Includes real-time database search, status filter pills (`All Items`, `Active`, `Inactive`), pagination, modal creation/edit, and activation toggle.
 
 ## AI handoff notes
 
-- Completed task: Phase 3 Menu Management & Development Admin Seeder.
+- Completed task: Menu Management module implementation.
 - Files created/modified:
-  - `database/seeders/DatabaseSeeder.php`
-  - `tests/Feature/AuthenticationTest.php`
+  - `app/Livewire/Menu/ManageMenu.php`
+  - `resources/views/livewire/menu/manage-menu.blade.php`
+  - `tests/Feature/MenuTest.php`
+  - `tests/Feature/ExampleTest.php`
   - `CONTEXT.md`
 - Recommended database setup command: `php artisan migrate:fresh --seed`
 - Next task: Phase 4 — Income and Expense (Wait for user instruction, do not start Phase 4 automatically).
