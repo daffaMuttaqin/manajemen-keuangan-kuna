@@ -220,6 +220,14 @@ class IncomeCalculationService
     }
 
     /**
+     * Confirm payment for an unpaid income transaction. (Phase 5)
+     */
+    public function confirmPayment(IncomeTransaction $income, ?int $accountId = null): IncomeTransaction
+    {
+        return app(PaymentConfirmationService::class)->confirmIncomePayment($income, $accountId);
+    }
+
+    /**
      * Calculate total revenue for active, paid income transactions.
      *
      * Revenue = SUM(total_amount) WHERE record_status='active' AND payment_status='paid'

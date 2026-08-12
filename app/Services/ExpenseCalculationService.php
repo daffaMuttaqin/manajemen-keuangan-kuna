@@ -177,6 +177,14 @@ class ExpenseCalculationService
     }
 
     /**
+     * Confirm payment for an unpaid expense transaction. (Phase 5)
+     */
+    public function confirmPayment(ExpenseTransaction $expense, ?int $accountId = null): ExpenseTransaction
+    {
+        return app(PaymentConfirmationService::class)->confirmExpensePayment($expense, $accountId);
+    }
+
+    /**
      * Calculate total expenses for active, paid expense transactions.
      *
      * Total Expenses = SUM(amount) WHERE record_status='active' AND payment_status='paid'

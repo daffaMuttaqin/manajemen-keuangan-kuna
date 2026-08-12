@@ -198,6 +198,56 @@
     @endif
 
     {{-- ============================================================ --}}
+    {{-- Payment Confirmation Modal (Phase 5) --}}
+    {{-- ============================================================ --}}
+    @if($isConfirmModalOpen)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+            <div class="bg-surface-container-low border border-outline-variant rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant/50 flex-shrink-0">
+                    <h3 class="text-base font-semibold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px] text-emerald-400">check_circle</span>
+                        Confirm Expense Payment
+                    </h3>
+                    <button wire:click="closeConfirmModal" class="text-on-surface-variant hover:text-on-surface">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <p class="text-xs text-on-surface-variant">
+                        Select an active account to debit this expense payment. Once confirmed, the account balance will update immediately.
+                    </p>
+
+                    <div>
+                        <label for="confirm_account_id" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+                            Source Account <span class="text-error">*</span>
+                        </label>
+                        <select id="confirm_account_id"
+                                wire:model="confirm_account_id"
+                                class="w-full h-10 bg-background border @error('confirm_account_id') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                            <option value="">— Select Active Account —</option>
+                            @foreach($activeAccounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }} ({{ ucfirst($account->account_type) }})</option>
+                            @endforeach
+                        </select>
+                        @error('confirm_account_id')
+                            <p class="text-xs text-error mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 px-6 py-4 border-t border-outline-variant/50 flex-shrink-0">
+                    <button type="button" wire:click="closeConfirmModal" class="px-4 py-2 border border-outline-variant rounded text-sm font-medium text-on-surface-variant hover:bg-surface-container transition">
+                        Cancel
+                    </button>
+                    <button type="button" wire:click="confirmPayment" class="px-5 py-2 bg-emerald-500 text-on-primary rounded text-sm font-semibold hover:bg-emerald-600 transition flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">check</span>
+                        Confirm Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ============================================================ --}}
     {{-- Toolbar: Search + Filters --}}
     {{-- ============================================================ --}}
     <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-4">
@@ -329,16 +379,26 @@
 
                             {{-- Actions --}}
                             <td class="py-3.5 px-4 text-right">
-                                @if($tx->isActive())
-                                    <button wire:click="cancelExpense({{ $tx->id }})"
-                                            wire:confirm="Cancel this expense transaction? The record will be preserved in history."
-                                            class="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 ml-auto transition">
-                                        <span class="material-symbols-outlined text-[14px]">cancel</span>
-                                        Cancel
-                                    </button>
-                                @else
-                                    <span class="text-xs text-on-surface-variant/30 italic">Cancelled</span>
-                                @endif
+                                <div class="flex items-center justify-end gap-2">
+                                    @if($tx->isActive() && $tx->isUnpaid())
+                                        <button wire:click="openConfirmModal({{ $tx->id }})"
+                                                class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition font-medium">
+                                            <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                            Confirm Payment
+                                        </button>
+                                    @endif
+
+                                    @if($tx->isActive())
+                                        <button wire:click="cancelExpense({{ $tx->id }})"
+                                                wire:confirm="Cancel this expense transaction? The record will be preserved in history."
+                                                class="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 transition">
+                                            <span class="material-symbols-outlined text-[14px]">cancel</span>
+                                            Cancel
+                                        </button>
+                                    @else
+                                        <span class="text-xs text-on-surface-variant/30 italic">Cancelled</span>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty

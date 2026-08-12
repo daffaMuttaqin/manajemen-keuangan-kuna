@@ -154,6 +154,65 @@ class ManageExpense extends Component
     }
 
     // -------------------------------------------------------------------------
+    // Payment Confirmation (Phase 5)
+    // -------------------------------------------------------------------------
+    public bool $isConfirmModalOpen = false;
+    public ?int $confirmingExpenseId = null;
+    public string $confirm_account_id = '';
+
+    public function openConfirmModal(int $id): void
+    {
+        $expense = ExpenseTransaction::findOrFail($id);
+
+        if ($expense->isCancelled()) {
+            session()->flash('error', 'Cannot confirm payment for a cancelled transaction.');
+            return;
+        }
+
+        if ($expense->isPaid()) {
+            session()->flash('error', 'This transaction is already paid.');
+            return;
+        }
+
+        $this->confirmingExpenseId = $expense->id;
+        $this->confirm_account_id  = $expense->account_id ? (string) $expense->account_id : '';
+        $this->isConfirmModalOpen  = true;
+    }
+
+    public function closeConfirmModal(): void
+    {
+        $this->isConfirmModalOpen = false;
+        $this->confirmingExpenseId = null;
+        $this->confirm_account_id  = '';
+        $this->resetValidation();
+    }
+
+    public function confirmPayment(): void
+    {
+        if (! $this->confirmingExpenseId) {
+            return;
+        }
+
+        $this->validate([
+            'confirm_account_id' => 'required|exists:accounts,id',
+        ]);
+
+        $account = Account::find((int) $this->confirm_account_id);
+        if (! $account || ! $account->is_active) {
+            $this->addError('confirm_account_id', 'The selected account must be active for payment confirmation.');
+            return;
+        }
+
+        $expense = ExpenseTransaction::findOrFail($this->confirmingExpenseId);
+
+        $service = app(\App\Services\PaymentConfirmationService::class);
+        $service->confirmExpensePayment($expense, (int) $this->confirm_account_id);
+
+        $this->closeConfirmModal();
+        session()->flash('success', 'Expense payment confirmed successfully. Account balance updated.');
+    }
+
+    // -------------------------------------------------------------------------
     // Filter helpers
     // -------------------------------------------------------------------------
     public function setStatusFilter(string $status): void

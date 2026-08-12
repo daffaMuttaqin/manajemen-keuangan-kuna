@@ -8,13 +8,13 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 
 ## Current project state
 
-- Project status: Phase 4 Income and Expense implementation completed and verified.
-- Current phase: Phase 4 — Income + Expense (Both Completed).
+- Project status: Phase 5 Payment Confirmation Foundation completed and verified.
+- Current phase: Phase 5 — Payment Logic (Completed).
 - Current task: None.
 - Laravel status: Configured & operational (v13.24.0).
 - MySQL status: Configured (`db-manajemen-kuna` DB, `finance-testing` test DB).
 - Authentication status: AuthenticatedSessionController, Login view, Logout, protected routes, and development admin seeder implemented.
-- Test suite status: 111 feature/unit tests passing (8 Auth/Seeder, 10 Account, 14 Menu, 4 Dashboard, 2 Example, 35 Income, 38 Expense).
+- Test suite status: 148 feature/unit tests passing (8 Auth/Seeder, 10 Account, 14 Menu, 4 Dashboard, 2 Example, 35 Income, 38 Expense, 37 Payment Confirmation).
 
 ## Completed phases
 
@@ -23,7 +23,7 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 - [x] Phase 3 — Menu
 - [x] Phase 4 — Income (Income transactions: creation, server-side calculation, cancellation, account balance integration)
 - [x] Phase 4 — Expense (Expense transactions: creation, server-side amount validation, cancellation, account balance deduction, dashboard integration)
-- [ ] Phase 5 — Payment Logic
+- [x] Phase 5 — Payment Logic (Payment Confirmation Foundation: Income & Expense payment confirmation, atomic balance updates, receivable/payable reduction, idempotent protection, inactive account protection)
 - [ ] Phase 6 — Cancellation and Editing
 - [ ] Phase 7 — Transfers
 - [ ] Phase 8 — Loans, Receivables, Payables, Assets
@@ -46,7 +46,8 @@ None.
 - `tests/Unit/ExampleTest.php` (1 test passed).
 - `tests/Feature/IncomeTest.php` (35 tests passed).
 - `tests/Feature/ExpenseTest.php` (38 tests passed).
-- Full suite: 111 tests, 239 assertions — all green.
+- `tests/Feature/PaymentConfirmationTest.php` (37 tests passed).
+- Full suite: 148 tests, 310 assertions — all green.
 
 ## Known issues
 
