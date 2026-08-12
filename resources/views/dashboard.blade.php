@@ -39,37 +39,37 @@
             </p>
         </div>
 
-        <!-- KPI 2: Total Revenue (Phase 4 Placeholder) -->
-        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5 opacity-90">
+        <!-- KPI 2: Total Revenue (Phase 4 — Live Data) -->
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
                 <div class="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                     <span class="material-symbols-outlined text-[20px]">trending_up</span>
                 </div>
             </div>
-            <div class="text-xl font-bold text-on-surface">
-                Rp 0,00
+            <div class="text-xl font-bold text-emerald-400">
+                Rp {{ number_format($totalRevenue, 2, ',', '.') }}
             </div>
-            <p class="text-xs text-on-surface-variant/60 mt-2 flex items-center gap-1">
-                <span class="text-[10px] bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant/40">Phase 4</span>
-                Income tracking module
+            <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active paid income (all-time)
             </p>
         </div>
 
-        <!-- KPI 3: Total Expenses (Phase 4 Placeholder) -->
-        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5 opacity-90">
+        <!-- KPI 3: Total Expenses (Phase 4 — Live Data) -->
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Expenses</span>
                 <div class="w-8 h-8 rounded bg-rose-500/10 flex items-center justify-center text-rose-400">
                     <span class="material-symbols-outlined text-[20px]">trending_down</span>
                 </div>
             </div>
-            <div class="text-xl font-bold text-on-surface">
-                Rp 0,00
+            <div class="text-xl font-bold text-rose-400">
+                Rp {{ number_format($totalExpenses, 2, ',', '.') }}
             </div>
-            <p class="text-xs text-on-surface-variant/60 mt-2 flex items-center gap-1">
-                <span class="text-[10px] bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant/40">Phase 4</span>
-                Expense tracking module
+            <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                Active paid expenses (all-time)
             </p>
         </div>
 

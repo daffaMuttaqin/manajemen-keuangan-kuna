@@ -44,14 +44,14 @@
 
             <!-- New Transaction Button (Placeholder) -->
             <div class="mb-6">
-                <button type="button" disabled title="Transaction module available in Phase 4"
-                        class="w-full py-2.5 px-3 bg-surface-container-high border border-outline-variant/60 text-on-surface-variant/60 rounded text-sm font-medium flex items-center justify-between cursor-not-allowed opacity-75">
+                <a href="{{ route('income.index') }}"
+                   class="w-full py-2.5 px-3 bg-primary/10 border border-primary/30 text-primary rounded text-sm font-medium flex items-center justify-between hover:bg-primary/20 transition">
                     <span class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                        New Transaction
+                        Record Income
                     </span>
-                    <span class="text-[10px] bg-surface-container-highest px-1.5 py-0.5 rounded text-on-surface-variant">Phase 4</span>
-                </button>
+                    <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                </a>
             </div>
 
             <!-- Main Navigation Links -->
@@ -79,15 +79,17 @@
                 <!-- Future Modules (Visually present, disabled) -->
                 <p class="px-3 text-[11px] font-semibold text-on-surface-variant/60 uppercase tracking-wider mt-6 mb-2">Financial Modules</p>
 
-                <div class="flex items-center justify-between px-3 py-2 text-sm text-on-surface-variant/40 cursor-not-allowed">
-                    <span class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">trending_up</span> Income</span>
-                    <span class="text-[10px] text-outline-variant">Phase 4</span>
-                </div>
+                <a href="{{ route('income.index') }}"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition {{ request()->routeIs('income.*') ? 'bg-primary-container/20 text-primary border-l-2 border-primary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' }}">
+                    <span class="material-symbols-outlined text-[20px]">trending_up</span>
+                    Income
+                </a>
 
-                <div class="flex items-center justify-between px-3 py-2 text-sm text-on-surface-variant/40 cursor-not-allowed">
-                    <span class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">trending_down</span> Expense</span>
-                    <span class="text-[10px] text-outline-variant">Phase 4</span>
-                </div>
+                <a href="{{ route('expense.index') }}"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition {{ request()->routeIs('expense.*') ? 'bg-primary-container/20 text-primary border-l-2 border-primary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' }}">
+                    <span class="material-symbols-outlined text-[20px]">trending_down</span>
+                    Expense
+                </a>
 
                 <div class="flex items-center justify-between px-3 py-2 text-sm text-on-surface-variant/40 cursor-not-allowed">
                     <span class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">swap_horiz</span> Transfers</span>

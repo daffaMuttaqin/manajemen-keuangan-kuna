@@ -18,5 +18,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/accounts', \App\Livewire\Accounts\ManageAccounts::class)->name('accounts.index');
     Route::get('/menu', \App\Livewire\Menu\ManageMenu::class)->name('menu.index');
+    Route::get('/income', \App\Livewire\Income\ManageIncome::class)->name('income.index');
+    Route::get('/expense', \App\Livewire\Expense\ManageExpense::class)->name('expense.index');
 });
+
 
