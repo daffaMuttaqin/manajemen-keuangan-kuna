@@ -73,4 +73,28 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect(route('login'));
     }
+
+    public function test_database_seeder_creates_default_admin_user_idempotently(): void
+    {
+        $this->seed();
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'admin@gmail.com',
+            'name' => 'Admin User',
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => 'admin@gmail.com',
+            'password' => '12345678',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard'));
+
+        // Run seeder again to ensure idempotency
+        $this->seed();
+
+        $this->assertEquals(1, User::where('email', 'admin@gmail.com')->count());
+    }
 }
+

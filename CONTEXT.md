@@ -8,13 +8,13 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 
 ## Current project state
 
-- Project status: Phase 3 — Menu Management completed.
+- Project status: Phase 3 — Menu Management completed. Development Admin Seeder added.
 - Current phase: Phase 3 — Menu (Completed)
-- Current task: Phase 3 Implementation finished.
+- Current task: Development Admin Seeder added.
 - Laravel status: Configured & operational (v13.24.0).
 - MySQL status: Configured (`db-manajemen-kuna` DB, `finance-testing` test DB).
-- Authentication status: AuthenticatedSessionController, Login view, Logout, and protected route implemented.
-- Test suite status: 26 focused feature tests passing (6 Auth, 10 Account, 10 Menu).
+- Authentication status: AuthenticatedSessionController, Login view, Logout, protected routes, and development admin seeder implemented.
+- Test suite status: 27 focused feature tests passing (7 Auth/Seeder, 10 Account, 10 Menu).
 
 ## Completed phases
 
@@ -37,7 +37,7 @@ None.
 
 ## Last verified tests
 
-- `tests/Feature/AuthenticationTest.php` (6 tests passed, 16 assertions).
+- `tests/Feature/AuthenticationTest.php` (7 tests passed, 21 assertions).
 - `tests/Feature/AccountTest.php` (10 tests passed, 21 assertions).
 - `tests/Feature/MenuTest.php` (10 tests passed, 27 assertions).
 
@@ -48,20 +48,17 @@ None.
 ## Decisions made during implementation
 
 - Auth Controller: Standard Laravel-native `AuthenticatedSessionController` handling login view, store authentication, and logout session destruction.
+- Development Admin Seeder: `DatabaseSeeder` uses `User::updateOrCreate()` for idempotent creation of local admin user (`admin@gmail.com` / `12345678`).
 - Database: MySQL configured for both main application database (`db-manajemen-kuna`) and test database (`finance-testing`).
 - UI: Clean minimal login page, base authenticated layout (`layouts.app`), dashboard placeholder (`/dashboard`), Accounts management (`/accounts`), and Menu management (`/menu`).
 - Historical Price principle: `current_price` on `MenuItem` represents only the current price. Future transaction modules will store their own price snapshot upon creation.
 
 ## AI handoff notes
 
-- Completed task: Phase 3 Menu Management.
+- Completed task: Phase 3 Menu Management & Development Admin Seeder.
 - Files created/modified:
-  - `database/migrations/2026_08_12_051625_create_menu_items_table.php`
-  - `app/Models/MenuItem.php`
-  - `app/Livewire/Menu/ManageMenu.php`
-  - `resources/views/livewire/menu/manage-menu.blade.php`
-  - `resources/views/layouts/app.blade.php`
-  - `routes/web.php`
-  - `tests/Feature/MenuTest.php`
+  - `database/seeders/DatabaseSeeder.php`
+  - `tests/Feature/AuthenticationTest.php`
   - `CONTEXT.md`
+- Recommended database setup command: `php artisan migrate:fresh --seed`
 - Next task: Phase 4 — Income and Expense (Wait for user instruction, do not start Phase 4 automatically).
