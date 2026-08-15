@@ -197,6 +197,120 @@ class IncomeCalculationService
     }
 
     /**
+     * Update an existing income transaction.
+     *
+     * @param IncomeTransaction $income
+     * @param array $data
+     * @return IncomeTransaction
+     *
+     * @throws InvalidArgumentException for invariant violations.
+     */
+    public function updateIncomeTransaction(IncomeTransaction $income, array $data, ?User $performer = null): IncomeTransaction
+    {
+        return DB::transaction(function () use ($income, $data, $performer) {
+            // Concurrency protection: lock the transaction row in DB
+            IncomeTransaction::where('id', $income->id)->lockForUpdate()->firstOrFail();
+
+            // Refresh the passed instance to load the locked DB state in-memory
+            $income->refresh();
+
+            if ($income->isCancelled()) {
+                throw new InvalidArgumentException('Cannot edit a cancelled income transaction.');
+            }
+
+            $oldPaymentStatus = $income->payment_status;
+            $newPaymentStatus = $data['payment_status'];
+
+            // Do not allow Paid -> Unpaid transition (PRD constraint)
+            if ($oldPaymentStatus === 'paid' && $newPaymentStatus === 'unpaid') {
+                throw new InvalidArgumentException('Cannot transition a paid transaction back to unpaid. (PRD)');
+            }
+
+            // Inactive account protection for paid transactions (INV-020)
+            if ($newPaymentStatus === 'paid') {
+                if (empty($data['account_id'])) {
+                    throw new InvalidArgumentException('An active account is required for paid income.');
+                }
+
+                $account = Account::findOrFail((int) $data['account_id']);
+                if (!$account->is_active) {
+                    throw new InvalidArgumentException('Inactive accounts cannot be used for paid income transactions. (INV-020)');
+                }
+            }
+
+            // Lock price unless menu item is updated
+            $menuItemId = (int) $data['menu_item_id'];
+            if ($menuItemId !== (int) $income->menu_item_id) {
+                $menuItem = MenuItem::findOrFail($menuItemId);
+                $unitPriceCents = $this->toCents($menuItem->current_price);
+            } else {
+                $unitPriceCents = $this->toCents($income->unit_price);
+            }
+
+            // Server-side calculation of amounts (INV-018)
+            $quantity = (float) $data['quantity'];
+            $discountPercentage = (float) ($data['discount_percentage'] ?? 0);
+
+            $subtotalCents = (int) round($quantity * $unitPriceCents);
+            $discountCents = (int) round($subtotalCents * $discountPercentage / 100);
+            $totalCents = $subtotalCents - $discountCents;
+
+            if ($totalCents < 0) {
+                throw new InvalidArgumentException('total_amount cannot be negative.');
+            }
+
+            // Formats for DECIMAL(19,2) DB storage
+            $unitPriceStr = $this->formatCents($unitPriceCents);
+            $subtotalStr = $this->formatCents($subtotalCents);
+            $discountStr = $this->formatCents($discountCents);
+            $totalAmountStr = $this->formatCents($totalCents);
+
+            // Paid_at timestamp handling
+            $paidAt = $income->paid_at;
+            if ($newPaymentStatus === 'paid' && $oldPaymentStatus === 'unpaid') {
+                $paidAt = now();
+            }
+
+            $beforeState = [
+                'quantity'       => (string) $income->quantity,
+                'total_amount'   => (string) $income->total_amount,
+                'account_id'     => $income->account_id,
+                'payment_status' => $income->payment_status,
+            ];
+
+            $income->update([
+                'transaction_date'    => $data['transaction_date'],
+                'menu_item_id'        => $menuItemId,
+                'quantity'            => $data['quantity'],
+                'unit_price'          => $unitPriceStr,
+                'discount_percentage' => $discountPercentage,
+                'subtotal'            => $subtotalStr,
+                'discount_amount'     => $discountStr,
+                'total_amount'        => $totalAmountStr,
+                'category'            => $data['category'],
+                'description'         => $data['description'] ?? null,
+                'account_id'          => $data['account_id'] ?? null,
+                'payment_status'      => $newPaymentStatus,
+                'paid_at'             => $paidAt,
+            ]);
+
+            $afterState = [
+                'quantity'       => (string) $income->quantity,
+                'total_amount'   => (string) $income->total_amount,
+                'account_id'     => $income->account_id,
+                'payment_status' => $income->payment_status,
+            ];
+
+            app(AuditLogService::class)->record('income_updated', $income, [
+                'before' => $beforeState,
+                'after'  => $afterState,
+            ], $performer);
+
+            return $income;
+        });
+    }
+
+    /**
      * Cancel an income transaction by setting record_status = 'cancelled'.
      *
      * Financial history is preserved (INV-019).
@@ -204,18 +318,31 @@ class IncomeCalculationService
      * Cancellation is implemented by status flag, never by physical deletion.
      *
      * @param IncomeTransaction $income
+     * @param User|null $performer
      * @return void
      *
      * @throws InvalidArgumentException if already cancelled.
      */
-    public function cancelIncomeTransaction(IncomeTransaction $income): void
+    public function cancelIncomeTransaction(IncomeTransaction $income, ?User $performer = null): void
     {
-        if ($income->isCancelled()) {
-            throw new InvalidArgumentException('This income transaction is already cancelled.');
-        }
+        DB::transaction(function () use ($income, $performer) {
+            // Concurrency protection: lock the transaction row in DB
+            IncomeTransaction::where('id', $income->id)->lockForUpdate()->firstOrFail();
 
-        DB::transaction(function () use ($income) {
+            // Refresh the passed instance to load the locked DB state in-memory
+            $income->refresh();
+
+            if ($income->isCancelled()) {
+                throw new InvalidArgumentException('This income transaction is already cancelled.');
+            }
+
             $income->update(['record_status' => 'cancelled']);
+
+            app(AuditLogService::class)->record('income_cancelled', $income, [
+                'record_status'  => 'cancelled',
+                'total_amount'   => (string) $income->total_amount,
+                'payment_status' => $income->payment_status,
+            ], $performer);
         });
     }
 

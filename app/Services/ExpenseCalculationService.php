@@ -154,6 +154,93 @@ class ExpenseCalculationService
     }
 
     /**
+     * Update an existing expense transaction.
+     *
+     * @param ExpenseTransaction $expense
+     * @param array $data
+     * @return ExpenseTransaction
+     *
+     * @throws InvalidArgumentException for invariant violations.
+     */
+    public function updateExpenseTransaction(ExpenseTransaction $expense, array $data, ?User $performer = null): ExpenseTransaction
+    {
+        return DB::transaction(function () use ($expense, $data, $performer) {
+            // Concurrency protection: lock the transaction row in DB
+            ExpenseTransaction::where('id', $expense->id)->lockForUpdate()->firstOrFail();
+
+            // Refresh the passed instance to load the locked DB state in-memory
+            $expense->refresh();
+
+            if ($expense->isCancelled()) {
+                throw new InvalidArgumentException('Cannot edit a cancelled expense transaction.');
+            }
+
+            $oldPaymentStatus = $expense->payment_status;
+            $newPaymentStatus = $data['payment_status'];
+
+            // Do not allow Paid -> Unpaid transition (PRD constraint)
+            if ($oldPaymentStatus === 'paid' && $newPaymentStatus === 'unpaid') {
+                throw new InvalidArgumentException('Cannot transition a paid transaction back to unpaid. (PRD)');
+            }
+
+            // Inactive account protection for paid transactions (INV-020)
+            if ($newPaymentStatus === 'paid') {
+                if (empty($data['account_id'])) {
+                    throw new InvalidArgumentException('An active account is required for paid expense.');
+                }
+
+                $account = Account::findOrFail((int) $data['account_id']);
+                if (!$account->is_active) {
+                    throw new InvalidArgumentException('Inactive accounts cannot be used for paid expense transactions. (INV-020)');
+                }
+            }
+
+            // Parse and validate amount server-side using integer cents
+            $amountCents = $this->toCents($data['amount']);
+            if ($amountCents <= 0) {
+                throw new InvalidArgumentException('Expense amount must be greater than zero.');
+            }
+
+            $amountStr = $this->formatCents($amountCents);
+
+            // Paid_at timestamp handling
+            $paidAt = $expense->paid_at;
+            if ($newPaymentStatus === 'paid' && $oldPaymentStatus === 'unpaid') {
+                $paidAt = now();
+            }
+
+            $beforeState = [
+                'amount'         => (string) $expense->amount,
+                'account_id'     => $expense->account_id,
+                'payment_status' => $expense->payment_status,
+            ];
+
+            $expense->update([
+                'transaction_date' => $data['transaction_date'],
+                'expense_category' => $data['expense_category'],
+                'description'      => $data['description'] ?? null,
+                'amount'           => $amountStr,
+                'account_id'       => $data['account_id'] ?? null,
+                'payment_status'   => $newPaymentStatus,
+                'paid_at'          => $paidAt,
+            ]);
+
+            $afterState = [
+                'amount'         => (string) $expense->amount,
+                'account_id'     => $expense->account_id,
+                'payment_status' => $expense->payment_status,
+            ];
+
+            app(AuditLogService::class)->record('expense_updated', $expense, [
+                'before' => $beforeState,
+                'after'  => $afterState,
+            ], $performer);
+
+            return $expense;
+        });
+    }
+
+    /**
      * Cancel an expense transaction by setting record_status = 'cancelled'.
      *
      * Financial history is preserved (INV-019).
@@ -161,18 +248,31 @@ class ExpenseCalculationService
      * Cancellation is implemented by status flag, never by physical deletion.
      *
      * @param ExpenseTransaction $expense
+     * @param User|null $performer
      * @return void
      *
      * @throws InvalidArgumentException if already cancelled.
      */
-    public function cancelExpenseTransaction(ExpenseTransaction $expense): void
+    public function cancelExpenseTransaction(ExpenseTransaction $expense, ?User $performer = null): void
     {
-        if ($expense->isCancelled()) {
-            throw new InvalidArgumentException('This expense transaction is already cancelled.');
-        }
+        DB::transaction(function () use ($expense, $performer) {
+            // Concurrency protection: lock the transaction row in DB
+            ExpenseTransaction::where('id', $expense->id)->lockForUpdate()->firstOrFail();
 
-        DB::transaction(function () use ($expense) {
+            // Refresh the passed instance to load the locked DB state in-memory
+            $expense->refresh();
+
+            if ($expense->isCancelled()) {
+                throw new InvalidArgumentException('This expense transaction is already cancelled.');
+            }
+
             $expense->update(['record_status' => 'cancelled']);
+
+            app(AuditLogService::class)->record('expense_cancelled', $expense, [
+                'record_status'  => 'cancelled',
+                'amount'         => (string) $expense->amount,
+                'payment_status' => $expense->payment_status,
+            ], $performer);
         });
     }
 

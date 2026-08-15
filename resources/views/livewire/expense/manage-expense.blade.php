@@ -45,7 +45,7 @@
                 <div class="flex items-center justify-between px-6 py-4 border-b border-outline-variant/50 flex-shrink-0">
                     <h3 id="expense-modal-title" class="text-base font-bold text-on-surface flex items-center gap-2">
                         <span class="material-symbols-outlined text-[20px] text-rose-400">trending_down</span>
-                        Record Expense Transaction
+                        {{ $editingExpenseId ? 'Edit Expense Transaction' : 'Record Expense Transaction' }}
                     </h3>
                     <button type="button"
                             wire:click="closeModal"
@@ -76,12 +76,13 @@
                                 <label for="payment_status" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
                                     Payment Status <span class="text-error">*</span>
                                 </label>
-                                <select id="payment_status"
-                                        wire:model.live="payment_status"
-                                        class="w-full h-10 bg-background border @error('payment_status') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                                    <option value="unpaid">Unpaid</option>
-                                    <option value="paid">Paid</option>
-                                </select>
+                                 <select id="payment_status"
+                                         wire:model.live="payment_status"
+                                         @if($editingExpenseId && $payment_status === 'paid') disabled @endif
+                                         class="w-full h-10 bg-background border @error('payment_status') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+                                     <option value="unpaid">Unpaid</option>
+                                     <option value="paid">Paid</option>
+                                 </select>
                                 @error('payment_status')
                                     <p class="text-xs text-error mt-1">{{ $message }}</p>
                                 @enderror
@@ -385,6 +386,14 @@
                                                 class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition font-medium">
                                             <span class="material-symbols-outlined text-[14px]">check_circle</span>
                                             Confirm Payment
+                                        </button>
+                                    @endif
+
+                                    @if($tx->isActive())
+                                        <button wire:click="editExpense({{ $tx->id }})"
+                                                class="text-xs text-primary hover:text-primary-container flex items-center gap-1 transition font-medium">
+                                            <span class="material-symbols-outlined text-[14px]">edit</span>
+                                            Edit
                                         </button>
                                     @endif
 

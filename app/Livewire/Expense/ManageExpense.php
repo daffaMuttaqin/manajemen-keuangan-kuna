@@ -30,6 +30,7 @@ class ManageExpense extends Component
     // UI state
     // -------------------------------------------------------------------------
     public bool $isModalOpen = false;
+    public ?int $editingExpenseId = null;
 
     // -------------------------------------------------------------------------
     // URL-bound search/filter state
@@ -97,6 +98,27 @@ class ManageExpense extends Component
         $this->isModalOpen = true;
     }
 
+    public function editExpense(int $id): void
+    {
+        $this->resetForm();
+        $expense = ExpenseTransaction::findOrFail($id);
+
+        if ($expense->isCancelled()) {
+            session()->flash('error', 'Cannot edit a cancelled expense transaction.');
+            return;
+        }
+
+        $this->editingExpenseId = $expense->id;
+        $this->transaction_date = $expense->transaction_date->format('Y-m-d');
+        $this->expense_category = $expense->expense_category;
+        $this->description      = $expense->description ?? '';
+        $this->amount           = (string) $expense->amount;
+        $this->account_id       = $expense->account_id ? (string) $expense->account_id : '';
+        $this->payment_status   = $expense->payment_status;
+
+        $this->isModalOpen = true;
+    }
+
     public function closeModal(): void
     {
         $this->isModalOpen = false;
@@ -121,18 +143,36 @@ class ManageExpense extends Component
 
         $service = app(ExpenseCalculationService::class);
 
-        $service->createExpenseTransaction([
-            'transaction_date' => $this->transaction_date,
-            'expense_category' => $this->expense_category,
-            'description'      => $this->description ?: null,
-            'amount'           => $this->amount,
-            'account_id'       => $this->account_id ?: null,
-            'payment_status'   => $this->payment_status,
-        ], auth()->user());
+        try {
+            if ($this->editingExpenseId) {
+                $expense = ExpenseTransaction::findOrFail($this->editingExpenseId);
+                $service->updateExpenseTransaction($expense, [
+                    'transaction_date' => $this->transaction_date,
+                    'expense_category' => $this->expense_category,
+                    'description'      => $this->description ?: null,
+                    'amount'           => $this->amount,
+                    'account_id'       => $this->account_id ?: null,
+                    'payment_status'   => $this->payment_status,
+                ]);
+                session()->flash('success', 'Expense transaction updated successfully.');
+            } else {
+                $service->createExpenseTransaction([
+                    'transaction_date' => $this->transaction_date,
+                    'expense_category' => $this->expense_category,
+                    'description'      => $this->description ?: null,
+                    'amount'           => $this->amount,
+                    'account_id'       => $this->account_id ?: null,
+                    'payment_status'   => $this->payment_status,
+                ], auth()->user());
+                session()->flash('success', 'Expense transaction recorded successfully.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', $e->getMessage());
+            return;
+        }
 
         $this->isModalOpen = false;
         $this->resetForm();
-        session()->flash('success', 'Expense transaction recorded successfully.');
     }
 
     // -------------------------------------------------------------------------
@@ -232,6 +272,7 @@ class ManageExpense extends Component
     // -------------------------------------------------------------------------
     public function resetForm(): void
     {
+        $this->editingExpenseId  = null;
         $this->transaction_date  = now()->format('Y-m-d');
         $this->expense_category  = '';
         $this->description       = '';

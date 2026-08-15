@@ -116,6 +116,29 @@ class ManageIncome extends Component
         $this->isModalOpen = true;
     }
 
+    public function editIncome(int $id): void
+    {
+        $this->resetForm();
+        $income = IncomeTransaction::findOrFail($id);
+
+        if ($income->isCancelled()) {
+            session()->flash('error', 'Cannot edit a cancelled income transaction.');
+            return;
+        }
+
+        $this->editingIncomeId     = $income->id;
+        $this->transaction_date    = $income->transaction_date->format('Y-m-d');
+        $this->menu_item_id        = (string) $income->menu_item_id;
+        $this->quantity            = (string) $income->quantity;
+        $this->discount_percentage = (string) $income->discount_percentage;
+        $this->category            = $income->category;
+        $this->description         = $income->description ?? '';
+        $this->account_id          = $income->account_id ? (string) $income->account_id : '';
+        $this->payment_status      = $income->payment_status;
+
+        $this->isModalOpen = true;
+    }
+
     public function closeModal(): void
     {
         $this->isModalOpen = false;
@@ -140,20 +163,40 @@ class ManageIncome extends Component
 
         $service = app(IncomeCalculationService::class);
 
-        $service->createIncomeTransaction([
-            'transaction_date'    => $this->transaction_date,
-            'menu_item_id'        => $this->menu_item_id,
-            'quantity'            => $this->quantity,
-            'discount_percentage' => $this->discount_percentage,
-            'category'            => $this->category,
-            'description'         => $this->description ?: null,
-            'account_id'          => $this->account_id ?: null,
-            'payment_status'      => $this->payment_status,
-        ], auth()->user());
+        try {
+            if ($this->editingIncomeId) {
+                $income = IncomeTransaction::findOrFail($this->editingIncomeId);
+                $service->updateIncomeTransaction($income, [
+                    'transaction_date'    => $this->transaction_date,
+                    'menu_item_id'        => $this->menu_item_id,
+                    'quantity'            => $this->quantity,
+                    'discount_percentage' => $this->discount_percentage,
+                    'category'            => $this->category,
+                    'description'         => $this->description ?: null,
+                    'account_id'          => $this->account_id ?: null,
+                    'payment_status'      => $this->payment_status,
+                ]);
+                session()->flash('success', 'Income transaction updated successfully.');
+            } else {
+                $service->createIncomeTransaction([
+                    'transaction_date'    => $this->transaction_date,
+                    'menu_item_id'        => $this->menu_item_id,
+                    'quantity'            => $this->quantity,
+                    'discount_percentage' => $this->discount_percentage,
+                    'category'            => $this->category,
+                    'description'         => $this->description ?: null,
+                    'account_id'          => $this->account_id ?: null,
+                    'payment_status'      => $this->payment_status,
+                ], auth()->user());
+                session()->flash('success', 'Income transaction recorded successfully.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', $e->getMessage());
+            return;
+        }
 
         $this->isModalOpen = false;
         $this->resetForm();
-        session()->flash('success', 'Income transaction recorded successfully.');
     }
 
     // -------------------------------------------------------------------------
