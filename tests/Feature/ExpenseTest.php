@@ -101,6 +101,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Test Expense Transaction')
             ->set('expense_category', 'Operational')
             ->set('amount', '150000')
             ->set('account_id', $account->id)
@@ -125,6 +126,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Test Unpaid Expense')
             ->set('expense_category', 'Marketing')
             ->set('amount', '75000')
             ->set('account_id', '')
@@ -148,6 +150,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Paid Expense')
             ->set('expense_category', 'Operational')
             ->set('amount', '50000')
             ->set('account_id', '')
@@ -165,6 +168,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Paid Expense Inactive')
             ->set('expense_category', 'Operational')
             ->set('amount', '50000')
             ->set('account_id', $account->id)
@@ -183,6 +187,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Rent Expense')
             ->set('expense_category', 'Rent')
             ->set('amount', '500000')
             ->set('account_id', '')
@@ -251,6 +256,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Zero Amount Test')
             ->set('expense_category', 'Operational')
             ->set('amount', '0')
             ->set('payment_status', 'unpaid')
@@ -266,6 +272,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Negative Amount Test')
             ->set('expense_category', 'Operational')
             ->set('amount', '-500')
             ->set('payment_status', 'unpaid')
@@ -547,6 +554,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Category Test')
             ->set('expense_category', 'Totally Invalid Category')
             ->set('amount', '50000')
             ->set('payment_status', 'unpaid')
@@ -578,6 +586,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->set('transaction_date', now()->format('Y-m-d'))
+            ->set('transaction_name', 'Status Test')
             ->set('expense_category', 'Operational')
             ->set('amount', '50000')
             ->set('payment_status', 'invalid_status')
@@ -918,6 +927,42 @@ class ExpenseTest extends TestCase
         $service->cancelExpenseTransaction($expense, $user);
 
         $this->assertEquals('0', $service->calculateProfitEligibleExpenses());
+    }
+
+    public function test_expense_form_initializes_transaction_name_as_empty(): void
+    {
+        $user = $this->makeUser();
+        $this->actingAs($user);
+
+        Livewire::test(ManageExpense::class)
+            ->assertSet('transaction_name', '')
+            ->call('createExpense')
+            ->assertSet('transaction_name', '')
+            ->call('resetForm')
+            ->assertSet('transaction_name', '');
+    }
+
+    public function test_expense_total_expenses_card_displays_canonical_total(): void
+    {
+        $user = $this->makeUser();
+        $account = $this->makeActiveAccount(['opening_balance' => 1000000]);
+        $this->actingAs($user);
+
+        $expenseService = app(ExpenseCalculationService::class);
+
+        // Paid active expense (50000)
+        $expenseService->createExpenseTransaction($this->minimalPaidData($account->id, ['amount' => '50000']), $user);
+
+        // Unpaid active expense (30000) — excluded from total expenses
+        $expenseService->createExpenseTransaction($this->minimalUnpaidData(['amount' => '30000']), $user);
+
+        // Cancelled expense (80000) — excluded from total expenses
+        $cancelled = $expenseService->createExpenseTransaction($this->minimalPaidData($account->id, ['amount' => '80000']), $user);
+        $expenseService->cancelExpenseTransaction($cancelled);
+
+        Livewire::test(ManageExpense::class)
+            ->assertSeeHtml('Total Expenses')
+            ->assertSeeHtml('Rp 50.000,00');
     }
 }
 

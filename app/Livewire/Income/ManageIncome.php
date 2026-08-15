@@ -346,11 +346,13 @@ class ManageIncome extends Component
 
         $activeMenuItems  = MenuItem::where('is_active', true)->orderBy('name')->get();
         $activeAccounts   = Account::where('is_active', true)->orderBy('name')->get();
+        $totalIncome      = (float) app(IncomeCalculationService::class)->calculateRevenue();
 
         return view('livewire.income.manage-income', [
             'incomeTransactions' => $incomeTransactions,
             'activeMenuItems'    => $activeMenuItems,
             'activeAccounts'     => $activeAccounts,
+            'totalIncome'        => $totalIncome,
         ]);
     }
 }

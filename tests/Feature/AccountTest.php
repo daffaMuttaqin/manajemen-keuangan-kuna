@@ -169,4 +169,17 @@ class AccountTest extends TestCase
             'is_active' => 0,
         ]);
     }
+
+    public function test_add_account_modal_can_open_and_close_correctly(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        Livewire::test(ManageAccounts::class)
+            ->assertSet('isModalOpen', false)
+            ->call('createAccount')
+            ->assertSet('isModalOpen', true)
+            ->call('closeModal')
+            ->assertSet('isModalOpen', false);
+    }
 }

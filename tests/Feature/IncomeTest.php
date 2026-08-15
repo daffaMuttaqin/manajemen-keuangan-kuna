@@ -769,4 +769,28 @@ class IncomeTest extends TestCase
         // Only active account contributes.
         $this->assertEquals(50000.0, $balanceService->calculateTotalCompanyBalance());
     }
+
+    public function test_income_total_incomes_card_displays_canonical_total(): void
+    {
+        $user = $this->makeUser();
+        $account = $this->makeActiveAccount(['opening_balance' => 1000000]);
+        $item = $this->makeMenuItem(['current_price' => 50000]);
+        $this->actingAs($user);
+
+        $incomeService = app(IncomeCalculationService::class);
+
+        // Paid active income (100000)
+        $incomeService->createIncomeTransaction($this->minimalPaidData($item->id, $account->id), $user);
+
+        // Unpaid active income (50000) — excluded from total revenue
+        $incomeService->createIncomeTransaction($this->minimalUnpaidData($item->id), $user);
+
+        // Cancelled income (100000) — excluded from total revenue
+        $cancelled = $incomeService->createIncomeTransaction($this->minimalPaidData($item->id, $account->id), $user);
+        $incomeService->cancelIncomeTransaction($cancelled);
+
+        Livewire::test(ManageIncome::class)
+            ->assertSeeHtml('Total Incomes')
+            ->assertSeeHtml('Rp 100.000,00');
+    }
 }

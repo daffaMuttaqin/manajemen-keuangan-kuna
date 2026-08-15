@@ -71,7 +71,7 @@ class ManageExpense extends Component
     public function mount(): void
     {
         $this->transaction_date = now()->format('Y-m-d');
-        $this->transaction_name = 'Expense Transaction';
+        $this->transaction_name = '';
     }
 
     // -------------------------------------------------------------------------
@@ -280,7 +280,7 @@ class ManageExpense extends Component
     {
         $this->editingExpenseId  = null;
         $this->transaction_date  = now()->format('Y-m-d');
-        $this->transaction_name  = 'Expense Transaction';
+        $this->transaction_name  = '';
         $this->expense_category  = '';
         $this->description       = '';
         $this->amount            = '';
@@ -326,11 +326,13 @@ class ManageExpense extends Component
                                      ->paginate(15);
 
         $activeAccounts = Account::where('is_active', true)->orderBy('name')->get();
+        $totalExpenses  = (float) app(ExpenseCalculationService::class)->calculateTotalExpenses();
 
         return view('livewire.expense.manage-expense', [
             'expenseTransactions'  => $expenseTransactions,
             'activeAccounts'       => $activeAccounts,
             'expenseCategories'    => ExpenseTransaction::CATEGORIES,
+            'totalExpenses'        => $totalExpenses,
         ]);
     }
 }

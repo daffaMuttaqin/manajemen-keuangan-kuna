@@ -30,6 +30,25 @@
         </div>
     </div>
 
+    {{-- Summary Cards Section --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Incomes</span>
+                <div class="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                    <span class="material-symbols-outlined text-[20px]">trending_up</span>
+                </div>
+            </div>
+            <div class="text-xl font-bold text-emerald-400 font-mono">
+                Rp {{ number_format($totalIncome, 2, ',', '.') }}
+            </div>
+            <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                Active paid income transactions
+            </p>
+        </div>
+    </div>
+
     {{-- ============================================================ --}}
     {{-- Modal Form (Create) --}}
     {{-- ============================================================ --}}

@@ -135,6 +135,12 @@ class ManageAccounts extends Component
         $this->loadAccounts();
     }
 
+    public function closeModal()
+    {
+        $this->isModalOpen = false;
+        $this->resetForm();
+    }
+
     public function resetForm()
     {
         $this->editingAccountId = null;
