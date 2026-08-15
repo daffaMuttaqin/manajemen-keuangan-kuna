@@ -65,22 +65,52 @@ class ManageAccounts extends Component
     {
         $this->validate();
 
-        if ($this->editingAccountId) {
-            $account = Account::findOrFail($this->editingAccountId);
-            $account->update([
-                'name' => $this->name,
-                'account_type' => $this->account_type,
-                'opening_balance' => $this->opening_balance,
-                'is_active' => $this->is_active,
-            ]);
-        } else {
-            Account::create([
-                'name' => $this->name,
-                'account_type' => $this->account_type,
-                'opening_balance' => $this->opening_balance,
-                'is_active' => $this->is_active,
-            ]);
-        }
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            if ($this->editingAccountId) {
+                $account = Account::findOrFail($this->editingAccountId);
+                $beforeState = [
+                    'name'            => $account->name,
+                    'account_type'    => $account->account_type,
+                    'opening_balance' => (string) $account->opening_balance,
+                    'is_active'       => (bool) $account->is_active,
+                ];
+
+                $account->update([
+                    'name'            => $this->name,
+                    'account_type'    => $this->account_type,
+                    'opening_balance' => $this->opening_balance,
+                    'is_active'       => $this->is_active,
+                ]);
+
+                $afterState = [
+                    'name'            => $account->name,
+                    'account_type'    => $account->account_type,
+                    'opening_balance' => (string) $account->opening_balance,
+                    'is_active'       => (bool) $account->is_active,
+                ];
+
+                app(\App\Services\AuditLogService::class)->record('account_updated', $account, [
+                    'before' => $beforeState,
+                    'after'  => $afterState,
+                ], auth()->user());
+            } else {
+                $account = Account::create([
+                    'name'            => $this->name,
+                    'account_type'    => $this->account_type,
+                    'opening_balance' => $this->opening_balance,
+                    'is_active'       => $this->is_active,
+                ]);
+
+                app(\App\Services\AuditLogService::class)->record('account_created', $account, [
+                    'new' => [
+                        'name'            => $account->name,
+                        'account_type'    => $account->account_type,
+                        'opening_balance' => (string) $account->opening_balance,
+                        'is_active'       => (bool) $account->is_active,
+                    ],
+                ], auth()->user());
+            }
+        });
 
         $this->isModalOpen = false;
         $this->resetForm();
@@ -89,8 +119,19 @@ class ManageAccounts extends Component
 
     public function toggleActiveStatus($id)
     {
-        $account = Account::findOrFail($id);
-        $account->update(['is_active' => !$account->is_active]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($id) {
+            $account = Account::findOrFail($id);
+            $oldActive = (bool) $account->is_active;
+            $newActive = !$oldActive;
+            $account->update(['is_active' => $newActive]);
+
+            $action = $newActive ? 'account_activated' : 'account_deactivated';
+            app(\App\Services\AuditLogService::class)->record($action, $account, [
+                'before' => ['is_active' => $oldActive],
+                'after'  => ['is_active' => $newActive],
+            ], auth()->user());
+        });
+
         $this->loadAccounts();
     }
 

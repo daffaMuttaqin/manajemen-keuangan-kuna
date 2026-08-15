@@ -252,7 +252,7 @@ class ManageExpense extends Component
         $expense = ExpenseTransaction::findOrFail($this->confirmingExpenseId);
 
         $service = app(\App\Services\PaymentConfirmationService::class);
-        $service->confirmExpensePayment($expense, (int) $this->confirm_account_id);
+        $service->confirmExpensePayment($expense, (int) $this->confirm_account_id, auth()->user());
 
         $this->closeConfirmModal();
         session()->flash('success', 'Expense payment confirmed successfully. Account balance updated.');

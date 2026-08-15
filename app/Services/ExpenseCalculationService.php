@@ -138,7 +138,7 @@ class ExpenseCalculationService
         ) {
             $paidAt = ($paymentStatus === 'paid') ? now() : null;
 
-            return ExpenseTransaction::create([
+            $expense = ExpenseTransaction::create([
                 'transaction_id'   => $transactionId,
                 'transaction_date' => $data['transaction_date'],
                 'transaction_name' => $data['transaction_name'] ?? 'Expense Transaction',
@@ -151,6 +151,19 @@ class ExpenseCalculationService
                 'paid_at'          => $paidAt,
                 'created_by'       => $creator->id,
             ]);
+
+            app(AuditLogService::class)->record('expense_created', $expense, [
+                'new' => [
+                    'transaction_date' => $expense->transaction_date->format('Y-m-d'),
+                    'expense_category' => $expense->expense_category,
+                    'amount'           => (string) $expense->amount,
+                    'account_id'       => $expense->account_id,
+                    'payment_status'   => $expense->payment_status,
+                    'record_status'    => $expense->record_status,
+                ],
+            ], $creator);
+
+            return $expense;
         });
     }
 

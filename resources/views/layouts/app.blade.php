@@ -102,6 +102,12 @@
                     <span class="material-symbols-outlined text-[20px]">assessment</span>
                     Reports
                 </a>
+
+                <a href="{{ route('audit-logs.index') }}"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition {{ request()->routeIs('audit-logs.*') ? 'bg-primary-container/20 text-primary border-l-2 border-primary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' }}">
+                    <span class="material-symbols-outlined text-[20px]">history</span>
+                    Audit Trail
+                </a>
             </nav>
         </div>
 

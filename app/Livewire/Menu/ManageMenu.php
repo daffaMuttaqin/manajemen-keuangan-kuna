@@ -71,22 +71,52 @@ class ManageMenu extends Component
     {
         $this->validate();
 
-        if ($this->editingMenuItemId) {
-            $menuItem = MenuItem::findOrFail($this->editingMenuItemId);
-            $menuItem->update([
-                'name' => $this->name,
-                'category' => $this->category,
-                'current_price' => $this->current_price,
-                'is_active' => $this->is_active,
-            ]);
-        } else {
-            MenuItem::create([
-                'name' => $this->name,
-                'category' => $this->category,
-                'current_price' => $this->current_price,
-                'is_active' => $this->is_active,
-            ]);
-        }
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            if ($this->editingMenuItemId) {
+                $menuItem = MenuItem::findOrFail($this->editingMenuItemId);
+                $beforeState = [
+                    'name'          => $menuItem->name,
+                    'category'      => $menuItem->category,
+                    'current_price' => (string) $menuItem->current_price,
+                    'is_active'     => (bool) $menuItem->is_active,
+                ];
+
+                $menuItem->update([
+                    'name'          => $this->name,
+                    'category'      => $this->category,
+                    'current_price' => $this->current_price,
+                    'is_active'     => $this->is_active,
+                ]);
+
+                $afterState = [
+                    'name'          => $menuItem->name,
+                    'category'      => $menuItem->category,
+                    'current_price' => (string) $menuItem->current_price,
+                    'is_active'     => (bool) $menuItem->is_active,
+                ];
+
+                app(\App\Services\AuditLogService::class)->record('menu_item_updated', $menuItem, [
+                    'before' => $beforeState,
+                    'after'  => $afterState,
+                ], auth()->user());
+            } else {
+                $menuItem = MenuItem::create([
+                    'name'          => $this->name,
+                    'category'      => $this->category,
+                    'current_price' => $this->current_price,
+                    'is_active'     => $this->is_active,
+                ]);
+
+                app(\App\Services\AuditLogService::class)->record('menu_item_created', $menuItem, [
+                    'new' => [
+                        'name'          => $menuItem->name,
+                        'category'      => $menuItem->category,
+                        'current_price' => (string) $menuItem->current_price,
+                        'is_active'     => (bool) $menuItem->is_active,
+                    ],
+                ], auth()->user());
+            }
+        });
 
         $this->isModalOpen = false;
         $this->resetForm();
@@ -94,8 +124,18 @@ class ManageMenu extends Component
 
     public function toggleActiveStatus($id)
     {
-        $menuItem = MenuItem::findOrFail($id);
-        $menuItem->update(['is_active' => !$menuItem->is_active]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($id) {
+            $menuItem = MenuItem::findOrFail($id);
+            $oldActive = (bool) $menuItem->is_active;
+            $newActive = !$oldActive;
+            $menuItem->update(['is_active' => $newActive]);
+
+            $action = $newActive ? 'menu_item_activated' : 'menu_item_deactivated';
+            app(\App\Services\AuditLogService::class)->record($action, $menuItem, [
+                'before' => ['is_active' => $oldActive],
+                'after'  => ['is_active' => $newActive],
+            ], auth()->user());
+        });
     }
 
     public function resetForm()

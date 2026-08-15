@@ -29,7 +29,7 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 - [-] Phase 8 — [CANCELLED / SCOPE REMOVED] Loans, Receivables, Payables, Assets (Cancelled per user decision; Asset Expense category retained under Expense module)
 - [x] Phase 9 — Dashboard UI (KPI cards, native transaction feeds, date range filtering, Chart.js trend curves)
 - [x] Phase 10 — Reports and CSV (Financial Summary P&L, Income, Expense, Transfer detailed reports, category breakdown, chunked streamed CSV export)
-- [ ] Phase 11 — Audit Trail (Full UI and history review functionality remaining)
+- [x] Phase 11 — Audit Trail (Full read-only UI at /audit-logs, date/user/action/entity filters, pagination, complete audit event coverage across Accounts, Menu, Income, Expense, Payment Confirmations, and Transfers)
 - [ ] Phase 12 — Stabilization
 
 ## Active task

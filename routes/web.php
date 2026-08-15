@@ -24,6 +24,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/reports', \App\Livewire\Reports\ManageReports::class)->name('reports.index');
     Route::get('/reports/export/{type}', [\App\Http\Controllers\ReportExportController::class, 'export'])->name('reports.export');
+
+    Route::get('/audit-logs', \App\Livewire\AuditLogs\ManageAuditLogs::class)->name('audit-logs.index');
 });
 
 

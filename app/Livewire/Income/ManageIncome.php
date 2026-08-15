@@ -270,7 +270,7 @@ class ManageIncome extends Component
         $income = IncomeTransaction::findOrFail($this->confirmingIncomeId);
 
         $service = app(\App\Services\PaymentConfirmationService::class);
-        $service->confirmIncomePayment($income, (int) $this->confirm_account_id);
+        $service->confirmIncomePayment($income, (int) $this->confirm_account_id, auth()->user());
 
         $this->closeConfirmModal();
         session()->flash('success', 'Payment confirmed successfully. Account balance updated.');

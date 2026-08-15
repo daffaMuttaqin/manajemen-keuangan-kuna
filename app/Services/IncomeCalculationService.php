@@ -175,7 +175,7 @@ class IncomeCalculationService
         ) {
             $paidAt = ($paymentStatus === 'paid') ? now() : null;
 
-            return IncomeTransaction::create([
+            $income = IncomeTransaction::create([
                 'transaction_id'      => $transactionId,
                 'transaction_date'    => $data['transaction_date'],
                 'menu_item_id'        => $data['menu_item_id'],
@@ -193,6 +193,20 @@ class IncomeCalculationService
                 'paid_at'             => $paidAt,
                 'created_by'          => $creator->id,
             ]);
+
+            app(AuditLogService::class)->record('income_created', $income, [
+                'new' => [
+                    'transaction_date' => $income->transaction_date->format('Y-m-d'),
+                    'menu_item_id'     => $income->menu_item_id,
+                    'quantity'         => (string) $income->quantity,
+                    'total_amount'     => (string) $income->total_amount,
+                    'account_id'       => $income->account_id,
+                    'payment_status'   => $income->payment_status,
+                    'record_status'    => $income->record_status,
+                ],
+            ], $creator);
+
+            return $income;
         });
     }
 

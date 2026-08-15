@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\ExpenseTransaction;
 use App\Models\IncomeTransaction;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -30,11 +31,12 @@ class PaymentConfirmationService
      *
      * @param IncomeTransaction $income
      * @param int|null $accountId Account to credit (required if transaction has no account_id)
+     * @param User|null $performer
      * @return IncomeTransaction
      *
      * @throws InvalidArgumentException for invariant violations.
      */
-    public function confirmIncomePayment(IncomeTransaction $income, ?int $accountId = null): IncomeTransaction
+    public function confirmIncomePayment(IncomeTransaction $income, ?int $accountId = null, ?User $performer = null): IncomeTransaction
     {
         if ($income->isCancelled()) {
             throw new InvalidArgumentException('Cannot confirm payment for a cancelled income transaction. (INV-009)');
@@ -56,12 +58,28 @@ class PaymentConfirmationService
             throw new InvalidArgumentException('Inactive accounts cannot be used for payment confirmation. (INV-020)');
         }
 
-        return DB::transaction(function () use ($income, $account) {
+        return DB::transaction(function () use ($income, $account, $performer) {
+            $beforeState = [
+                'payment_status' => $income->payment_status,
+                'account_id'     => $income->account_id,
+            ];
+
             $income->update([
                 'payment_status' => 'paid',
                 'paid_at'        => now(),
                 'account_id'     => $account->id,
             ]);
+
+            $afterState = [
+                'payment_status' => 'paid',
+                'account_id'     => $account->id,
+                'paid_at'        => $income->paid_at ? $income->paid_at->toIso8601String() : null,
+            ];
+
+            app(AuditLogService::class)->record('income_payment_confirmed', $income, [
+                'before' => $beforeState,
+                'after'  => $afterState,
+            ], $performer);
 
             return $income->fresh();
         });
@@ -72,11 +90,12 @@ class PaymentConfirmationService
      *
      * @param ExpenseTransaction $expense
      * @param int|null $accountId Account to debit (required if transaction has no account_id)
+     * @param User|null $performer
      * @return ExpenseTransaction
      *
      * @throws InvalidArgumentException for invariant violations.
      */
-    public function confirmExpensePayment(ExpenseTransaction $expense, ?int $accountId = null): ExpenseTransaction
+    public function confirmExpensePayment(ExpenseTransaction $expense, ?int $accountId = null, ?User $performer = null): ExpenseTransaction
     {
         if ($expense->isCancelled()) {
             throw new InvalidArgumentException('Cannot confirm payment for a cancelled expense transaction. (INV-009)');
@@ -98,12 +117,28 @@ class PaymentConfirmationService
             throw new InvalidArgumentException('Inactive accounts cannot be used for payment confirmation. (INV-020)');
         }
 
-        return DB::transaction(function () use ($expense, $account) {
+        return DB::transaction(function () use ($expense, $account, $performer) {
+            $beforeState = [
+                'payment_status' => $expense->payment_status,
+                'account_id'     => $expense->account_id,
+            ];
+
             $expense->update([
                 'payment_status' => 'paid',
                 'paid_at'        => now(),
                 'account_id'     => $account->id,
             ]);
+
+            $afterState = [
+                'payment_status' => 'paid',
+                'account_id'     => $account->id,
+                'paid_at'        => $expense->paid_at ? $expense->paid_at->toIso8601String() : null,
+            ];
+
+            app(AuditLogService::class)->record('expense_payment_confirmed', $expense, [
+                'before' => $beforeState,
+                'after'  => $afterState,
+            ], $performer);
 
             return $expense->fresh();
         });

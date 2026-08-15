@@ -1401,6 +1401,7 @@ class Phase6CancellationAndEditingTest extends TestCase
 
         // Audit log must NOT be saved because transaction rolled back
         $this->assertDatabaseMissing('audit_logs', [
+            'action'         => 'income_updated',
             'auditable_type' => IncomeTransaction::class,
             'auditable_id'   => $income->id,
         ]);
