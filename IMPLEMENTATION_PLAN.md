@@ -32,12 +32,12 @@ Tests: paid edits, unpaid edits, cancellation, rollback.
 Features: transfer form, account movement, insufficient balance, concurrency protection.
 Tests: success, same account, insufficient balance, concurrent transfer.
 
-## Phase 8 — Loans, Receivables, Payables, Assets
-Features: loan receipt, principal repayment, receivables, payables, asset records.
-Tests: loan liability, repayment, obligations, asset treatment.
+## Phase 8 — [CANCELLED / SCOPE REMOVED] Loans, Receivables, Payables, Assets
+Status: CANCELLED.
+Note: Separate modules for Loans, Receivables, Payables, and Asset inventory tracking have been cancelled per user decision. The `Asset` Expense category remains supported under Phase 4/6 Expense transactions.
 
 ## Phase 9 — Dashboard
-Features: KPI cards, account balances, cash-flow chart, recent transactions, financial position.
+Features: KPI cards (Current Balance, Total Revenue, Total Expenses, Net Profit), account balances, cash-flow chart, recent transactions.
 Tests: every KPI formula, date ranges, empty state.
 
 ## Phase 10 — Reports and CSV
@@ -46,7 +46,7 @@ Tests: filtered data, date range, status, CSV contents.
 
 ## Phase 11 — Audit Trail
 Features: audit logging and history review.
-Tests: creation, edits, payment, cancellation, account/menu/loan changes.
+Tests: creation, edits, payment, cancellation, account/menu/transfer changes.
 
 ## Phase 12 — Stabilization
 Activities: full test suite, financial reconciliation, security review, responsive testing, database integrity review, duplicate-submission testing, performance testing, UI polish.

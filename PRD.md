@@ -1,7 +1,7 @@
 # KUNA PATISSERIE FINANCE MANAGEMENT
 
 **Status:** Source of Truth  
-**Version:** 1.0  
+**Version:** 1.1  
 **Role:** Product, accounting, architecture, database, UX, security, testing, and implementation requirements.
 
 This document remains the canonical product specification. The companion AI files do not replace business requirements in this PRD. They reorganize and operationalize requirements from the PRD so coding agents can consume them more reliably.
@@ -20,7 +20,7 @@ If any companion file conflicts with PRD.md, stop and report the conflict. Do no
 
 ## Product definition
 
-A simple internal cash-basis finance management application for Kuna Patisserie that tracks money, transactions, outstanding obligations, loans, assets, profitability, and financial history without becoming a full accounting ERP.
+A simple internal cash-basis finance management application for Kuna Patisserie that tracks money, income, expenses, transfers, account balances, profitability, and financial history without becoming a full accounting ERP.
 
 ## Technology
 
@@ -36,15 +36,12 @@ A simple internal cash-basis finance management application for Kuna Patisserie 
 ## V1 accounting model
 
 - Paid Income -> cash inflow + Revenue + Gross Profit + Net Profit
-- Unpaid Income -> Outstanding Receivable only
+- Unpaid Income -> unpaid record only; does not change cash or Revenue
 - Paid Expense (Profit-Eligible) -> cash outflow + Expense + reduces Net Profit
-- Paid Expense (Asset) -> cash outflow + Expense record; does NOT reduce Net Profit or Gross Profit
-- Unpaid Expense -> Outstanding Payable only
-- Loan principal received -> cash inflow + loan liability; not Revenue
-- Loan principal repayment -> cash outflow + liability reduction; not ordinary Expense
+- Paid Expense (Asset) -> cash outflow + Expense record; decreases cash balance when paid, but does NOT reduce Net Profit or Gross Profit
+- Unpaid Expense -> unpaid record only; does not change cash or Expense
 - Transfer -> account redistribution; no Revenue/Expense/Profit effect
 - Opening balance -> initial account state; no Revenue/Profit effect
-- Asset purchase / Asset expense -> cash outflow + Expense transaction record; excluded from COGS/OpEx/Gross Profit/Net Profit calculation in V1
 - Cancelled records remain in history but are excluded from active totals.
 
 ## Expense model & categories
@@ -68,8 +65,6 @@ Table Display Format:
 `Profit-Eligible Expenses = Sum of active paid expenses in [COGS, Operational, Marketing, Salary, Rent, Employee Salaries]`
 
 `Net Profit = Revenue - Profit-Eligible Expenses`
-
-`Net Financial Position = Current Balance + Outstanding Receivables - Outstanding Payables - Outstanding Loan Principal`
 
 Revenue = active paid income in the selected reporting period.
 
@@ -99,11 +94,11 @@ Recommended V1:
 
 ## V1 scope
 
-Authentication, accounts, menu, income, expense, payment confirmation, cancellation/editing, transfers, receivables, payables, loans, assets, dashboard, reports, CSV export, audit history, and financial correctness tests.
+Authentication, accounts, menu, income, expense, payment confirmation, cancellation/editing, transfers, dashboard, reports, CSV export, audit history, and financial correctness tests.
 
 ## Explicit non-goals
 
-No partial payments, loan interest/amortization, depreciation schedules, tax filing, inventory, CRM, supplier CRM, invoice generation, purchase orders, bank integration, payment gateway, automated reconciliation, advanced forecasting, AI financial advice, multi-company, multi-user roles, approval workflow, native mobile app, PDF export, double-entry bookkeeping.
+No loans, no loan repayments, no dedicated receivables/payables tracking modules, no separate asset inventory tracking, no partial payments, loan interest/amortization, depreciation schedules, tax filing, inventory, CRM, supplier CRM, invoice generation, purchase orders, bank integration, payment gateway, automated reconciliation, advanced forecasting, AI financial advice, multi-company, multi-user roles, approval workflow, native mobile app, PDF export, double-entry bookkeeping.
 
 ## Database/domain model
 
@@ -116,10 +111,6 @@ Core models:
 - IncomeTransaction
 - ExpenseTransaction
 - Transfer
-- Receivable
-- Payable
-- Loan
-- Asset
 - AuditLog
 
 Use decimal monetary storage, foreign keys, appropriate indexes, explicit relationships, and no hard deletion of financial history.
@@ -145,9 +136,6 @@ Recommended services:
 - PaymentConfirmationService
 - TransactionCancellationService
 - TransferService
-- LoanService
-- ReceivableService
-- PayableService
 - FinancialReportService
 - AuditLogService
 

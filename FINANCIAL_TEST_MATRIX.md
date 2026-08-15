@@ -34,17 +34,17 @@ Source and destination equal. Operation rejected and no balances change.
 ### FT-010 Insufficient transfer
 Given source Rp500.000, transfer Rp1.000.000. Operation rejected and no balances change.
 
-### FT-011 Loan receipt
-Loan receipt increases account and outstanding loan principal but does not affect Revenue, COGS, OpEx, Gross Profit, or Net Profit.
+### FT-011 [SCOPE CANCELLED] Loan receipt
+(Loan module cancelled).
 
-### FT-012 Loan principal repayment
-Repayment decreases account and outstanding principal but does not become ordinary Expense and does not affect Net Profit.
+### FT-012 [SCOPE CANCELLED] Loan principal repayment
+(Loan module cancelled).
 
 ### FT-013 Opening balance
-Opening balance changes Current Balance but does not change Revenue or Profit.
+Given opening balance, when account is created, Current Balance updates but Revenue and Profit remain unchanged.
 
-### FT-014 Asset purchase
-Asset purchase decreases cash and creates asset record but does not reduce Net Profit in V1.
+### FT-014 Asset purchase expense
+Given an active account, when an expense with category Asset is created and paid, cash decreases by the expense amount, but Net Profit is NOT reduced in V1.
 
 ### FT-015 Cancellation paid income
 Cancelling paid income reverses its active cash/reporting effect, preserves history, and creates an audit record.
@@ -53,7 +53,7 @@ Cancelling paid income reverses its active cash/reporting effect, preserves hist
 Cancelling paid expense reverses its active cash/reporting effect, preserves history, and creates an audit record.
 
 ### FT-017 Cancellation unpaid
-Cancelling unpaid income/expense removes the outstanding obligation effect while preserving history.
+Cancelling unpaid income/expense removes the pending record effect while preserving history.
 
 ### FT-018 Historical price
 Given historical unit price Rp100.000, changing current Menu price to Rp120.000 leaves historical transaction at Rp100.000.
@@ -85,14 +85,14 @@ CSV export contains rows matching the active report filters and does not modify 
 ### FT-027 Empty period
 Dashboard/report displays zero metrics and correct empty states.
 
-### FT-028 Receivable no double count
-Unpaid income creates an outstanding receivable but does not enter Revenue until paid.
+### FT-028 Unpaid income no double count
+Unpaid income creates an unpaid transaction record but does not enter Revenue until paid.
 
-### FT-029 Payable no double count
-Unpaid expense creates an outstanding payable but does not enter Expense until paid.
+### FT-029 Unpaid expense no double count
+Unpaid expense creates an unpaid transaction record but does not enter Expense until paid.
 
 ### FT-030 Auditability
-Creation, payment, edit, cancellation, account changes, menu changes, loan movements, and other required financial actions create appropriate audit records without secrets/passwords.
+Creation, payment, edit, cancellation, account changes, menu changes, transfers, and other required financial actions create appropriate audit records without secrets/passwords.
 
 ## Regression rule
 

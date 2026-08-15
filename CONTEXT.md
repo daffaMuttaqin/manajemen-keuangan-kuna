@@ -26,8 +26,8 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 - [x] Phase 5 — Payment Logic (Payment Confirmation Foundation: Income & Expense payment confirmation, atomic balance updates, receivable/payable reduction, idempotent protection, inactive account protection)
 - [x] Phase 6 — Cancellation, Editing, and Minimal Audit Recording Foundation (Edit/cancel income and expense transactions, financial reversal on cancellation, invalid-transition protection, paid-amount-difference application, paid-account-change atomicity, row-level concurrency locking, minimal AuditLog recording in same DB transaction)
 - [x] Phase 7 — Transfers (Internal fund transfers between active company accounts, strict balance conservation, deterministic deadlock-free row locking, insufficient balance protection, cancellation, audit log integration, unique transfer_id idempotency)
-- [ ] Phase 8 — Loans, Receivables, Payables, Assets
-- [x] Dashboard UI (Phase 9 UI shell ready; KPI 1–3 now show live data)
+- [-] Phase 8 — [CANCELLED / SCOPE REMOVED] Loans, Receivables, Payables, Assets (Cancelled per user decision; Asset Expense category retained under Expense module)
+- [x] Dashboard UI (Phase 9 KPI 1–4 now show live data: Current Balance, Total Revenue, Total Expenses, Net Profit)
 - [ ] Phase 10 — Reports and CSV
 - [ ] Phase 11 — Audit Trail (Full UI and history review functionality remaining)
 - [ ] Phase 12 — Stabilization
@@ -41,15 +41,15 @@ None.
 - `tests/Feature/AuthenticationTest.php` (8 tests passed).
 - `tests/Feature/AccountTest.php` (10 tests passed).
 - `tests/Feature/MenuTest.php` (14 tests passed).
-- `tests/Feature/DashboardTest.php` (4 tests passed).
+- `tests/Feature/DashboardTest.php` (5 tests passed).
 - `tests/Feature/ExampleTest.php` (1 test passed).
 - `tests/Unit/ExampleTest.php` (1 test passed).
 - `tests/Feature/IncomeTest.php` (35 tests passed).
-- `tests/Feature/ExpenseTest.php` (38 tests passed).
+- `tests/Feature/ExpenseTest.php` (43 tests passed).
 - `tests/Feature/PaymentConfirmationTest.php` (37 tests passed).
 - `tests/Feature/Phase6CancellationAndEditingTest.php` (40 tests passed — includes 6 audit foundation tests).
 - `tests/Feature/TransferTest.php` (10 tests passed).
-- Full suite: 198 tests, 463 assertions — all green. Verified 2026-08-15.
+- Full suite: 204 tests, 479 assertions — all green. Verified 2026-08-15.
 
 ## Known issues
 
@@ -61,28 +61,20 @@ None.
 
 - Income (Phase 4): Uses integer-cents arithmetic (instead of bcmath or floating-point) for all monetary calculations in `IncomeCalculationService`. Enforces: INV-001, INV-003, INV-009, INV-010, INV-013, INV-014, INV-018, INV-019, INV-020.
 
-- Expense (Phase 4): Same integer-cents arithmetic pattern as Income. Enforces: INV-002, INV-004, INV-009, INV-012, INV-014, INV-018, INV-019, INV-020.
+- Expense (Phase 4): Same integer-cents arithmetic pattern as Income. Enforces: INV-002, INV-004, INV-009, INV-012, INV-014, INV-018, INV-019, INV-020. Excludes `'Asset'` category expenses from profit-eligible calculations.
 
-- Dashboard (updated Phase 4): KPI 2 (Total Revenue) now shows live IncomeCalculationService::calculateRevenue() data. KPI 3 (Total Expenses) now shows live ExpenseCalculationService::calculateTotalExpenses() data. Net Cash Flow (KPI 4) remains Phase 4+ placeholder because correct Net Financial Position requires Phase 8 (loans) data.
+- Dashboard: KPI 1 (Current Balance) shows active account total balance. KPI 2 (Total Revenue) shows live `calculateRevenue()` data. KPI 3 (Total Expenses) shows live `calculateTotalExpenses()` data. KPI 4 (Net Profit) shows live `Net Profit = Revenue - Profit-Eligible Expenses` data (`ExpenseCalculationService::calculateProfitEligibleExpenses()`).
 
 - Phase 6 — Cancellation, Editing, and Minimal Audit Recording Foundation: All editing and cancellation flows are implemented in `IncomeCalculationService` and `ExpenseCalculationService` with row locking (`lockForUpdate()`), status checks, dynamic SUM balance calculation, and `AuditLogService` integration.
 
 - Phase 7 — Transfers: Implemented in `TransferService::createTransfer()` and `cancelTransfer()`. Enforces: (1) `transfer_id` unique UUID constraint for idempotency (FT-022), (2) deterministic lock ordering (`min($fromId, $toId)` then `max($fromId, $toId)`) to eliminate deadlocks, (3) balance check AFTER both account locks are acquired, (4) `from_account_id !== to_account_id` validation (INV-015, FT-009), (5) active status checks on both accounts (INV-020), (6) `AccountBalanceService::calculateBalance()` integration adding incoming and subtracting outgoing active transfers so total company balance is conserved (INV-005, FT-008), (7) `AuditLog` creation inside the DB transaction (FT-030).
 
+- Phase 8 Scope Cancelled: Separate modules for Loans, Receivables, Payables, and Asset Management were cancelled per user decision. The `Asset` Expense category remains in place.
+
 ## AI handoff notes
 
-- Completed task: Phase 7 Transfers implementation and full verification.
-- Files created by Phase 7 task:
-  - `database/migrations/2026_08_16_000000_create_transfers_table.php`
-  - `app/Models/Transfer.php`
-  - `app/Services/TransferService.php`
-  - `app/Livewire/Transfer/ManageTransfers.php`
-  - `resources/views/livewire/transfer/manage-transfers.blade.php`
-  - `tests/Feature/TransferTest.php`
-- Files modified by Phase 7 task:
-  - `app/Services/AccountBalanceService.php` (added active transfer inflows/outflows to dynamic balance SUM formula)
-  - `routes/web.php` (registered `/transfers` route guarded by `auth` middleware)
-  - `resources/views/layouts/app.blade.php` (activated Transfers navigation link)
-- Next task: Phase 8 — Loans, Receivables, Payables, Assets (Wait for user instruction).
+- Completed task: Scope cleanup for Phase 8 cancellation.
+- Files updated: `PRD.md`, `FINANCIAL_INVARIANTS.md`, `FINANCIAL_TEST_MATRIX.md`, `IMPLEMENTATION_PLAN.md`, `CONTEXT.md`.
+- Next step: Wait for user instruction for Phase 10 (Reports and CSV) or Phase 11 (Audit Trail).
 
 

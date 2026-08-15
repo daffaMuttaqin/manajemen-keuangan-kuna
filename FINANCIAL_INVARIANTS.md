@@ -17,11 +17,11 @@ Unpaid expense never changes current cash.
 ## INV-005 — Transfer conservation
 A transfer changes account distribution but not total company Current Balance.
 
-## INV-006 — Loan receipt
-Loan principal does not affect Revenue.
+## INV-006 — [SCOPE CANCELLED] Loan receipt
+(Loan module cancelled).
 
-## INV-007 — Loan repayment
-Loan principal repayment does not affect Net Profit.
+## INV-007 — [SCOPE CANCELLED] Loan repayment
+(Loan module cancelled).
 
 ## INV-008 — Opening balance
 Opening balances do not affect Revenue or Profit.
@@ -32,11 +32,11 @@ Cancelled records do not contribute to active financial totals.
 ## INV-010 — Historical price
 Changing a Menu item price never changes historical transaction prices.
 
-## INV-011 — Receivable uniqueness
-A receivable never creates additional Revenue.
+## INV-011 — [SCOPE UPDATED] Payment Confirmation
+Payment confirmation converts an unpaid transaction to paid status once without creating duplicate revenue/expense records.
 
-## INV-012 — Payable uniqueness
-A payable never creates additional Expense.
+## INV-012 — [SCOPE UPDATED] Unpaid transactions
+Unpaid income/expense records never alter cash balance or profit metrics until confirmed paid.
 
 ## INV-013 — Idempotent payment
 Repeating payment confirmation cannot duplicate the financial effect.
@@ -51,7 +51,7 @@ Transfer source and destination must differ.
 Ordinary transfers cannot create a negative source account balance.
 
 ## INV-017 — Asset treatment
-Asset purchase does not reduce Net Profit in V1.
+Paid Asset category expense decreases cash balance when paid, but does NOT reduce Net Profit in V1.
 
 ## INV-018 — Server authority
 Client-calculated amounts are never authoritative.
@@ -64,20 +64,17 @@ Inactive accounts cannot be used for new financial transactions.
 
 ## Canonical financial effects
 
-| Event | Cash/account | Revenue | COGS | OpEx | Profit | Receivable | Payable | Loan |
-|---|---|---|---|---|---|---|---|---|
-| Opening Balance | + initial state | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Unpaid Income | 0 | 0 | 0 | 0 | 0 | + | 0 | 0 |
-| Paid Income | + | + | 0 | 0 | + | settle | 0 | 0 |
-| Unpaid COGS | 0 | 0 | 0 | 0 | 0 | 0 | + | 0 |
-| Paid COGS | - | 0 | + | 0 | - | 0 | settle | 0 |
-| Unpaid OpEx | 0 | 0 | 0 | 0 | 0 | 0 | + | 0 |
-| Paid OpEx | - | 0 | 0 | + | - | 0 | settle | 0 |
-| Asset Purchase | - | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Transfer | redistribution | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Loan Received | + | 0 | 0 | 0 | 0 | 0 | 0 | + |
-| Loan Principal Repayment | - | 0 | 0 | 0 | 0 | 0 | 0 | - |
-| Cancellation | reverse applicable prior effect | reverse | reverse | reverse | reverse | reverse | reverse | reverse where applicable |
+| Event | Cash/account | Revenue | COGS | OpEx | Net Profit |
+|---|---|---|---|---|---|
+| Opening Balance | + initial state | 0 | 0 | 0 | 0 |
+| Unpaid Income | 0 | 0 | 0 | 0 | 0 |
+| Paid Income | + | + | 0 | 0 | + |
+| Unpaid Expense | 0 | 0 | 0 | 0 | 0 |
+| Paid COGS Expense | - | 0 | + | 0 | - |
+| Paid Profit-Eligible OpEx | - | 0 | 0 | + | - |
+| Paid Asset Expense | - | 0 | 0 | 0 | 0 |
+| Transfer | redistribution | 0 | 0 | 0 | 0 |
+| Cancellation | reverse applicable prior effect | reverse | reverse | reverse | reverse |
 
 ## Formula invariants
 
@@ -89,8 +86,6 @@ Inactive accounts cannot be used for new financial transactions.
 
 `Net Profit = Revenue - Profit-Eligible Expenses`
 
-`Net Financial Position = Current Balance + Outstanding Receivables - Outstanding Payables - Outstanding Loan Principal`
-
 ## Required financial trace
 
 For every new financial operation, document:
@@ -99,7 +94,6 @@ For every new financial operation, document:
 - state after;
 - cash effect;
 - reporting effect;
-- obligation effect;
-- liability effect;
 - audit event;
 - rollback behavior.
+
