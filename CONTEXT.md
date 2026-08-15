@@ -8,13 +8,13 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 
 ## Current project state
 
-- Project status: Phase 7 Transfers completed and verified.
-- Current phase: Phase 7 — Transfers (Completed).
+- Project status: Phase 10 Reports and CSV completed and verified.
+- Current phase: Phase 10 — Reports and CSV (Completed).
 - Current task: None.
 - Laravel status: Configured & operational (v13.24.0).
 - MySQL status: Configured (`db-manajemen-keuangan-kuna` DB, `finance-testing` test DB).
 - Authentication status: AuthenticatedSessionController, Login view, Logout, protected routes, and development admin seeder implemented.
-- Test suite status: 198 feature/unit tests passing (8 Auth/Seeder, 10 Account, 14 Menu, 4 Dashboard, 2 Example, 35 Income, 38 Expense, 37 Payment Confirmation, 40 Phase 6 Cancellation/Editing & Audit Foundation, 10 Phase 7 Transfers).
+- Test suite status: 221 feature/unit tests passing (8 Auth/Seeder, 10 Account, 14 Menu, 10 Dashboard, 2 Example, 35 Income, 43 Expense, 37 Payment Confirmation, 40 Phase 6 Cancellation/Editing & Audit Foundation, 10 Phase 7 Transfers, 12 Phase 10 Reports & CSV).
 
 ## Completed phases
 
@@ -27,8 +27,8 @@ It is NOT a source of business requirements. PRD.md remains authoritative.
 - [x] Phase 6 — Cancellation, Editing, and Minimal Audit Recording Foundation (Edit/cancel income and expense transactions, financial reversal on cancellation, invalid-transition protection, paid-amount-difference application, paid-account-change atomicity, row-level concurrency locking, minimal AuditLog recording in same DB transaction)
 - [x] Phase 7 — Transfers (Internal fund transfers between active company accounts, strict balance conservation, deterministic deadlock-free row locking, insufficient balance protection, cancellation, audit log integration, unique transfer_id idempotency)
 - [-] Phase 8 — [CANCELLED / SCOPE REMOVED] Loans, Receivables, Payables, Assets (Cancelled per user decision; Asset Expense category retained under Expense module)
-- [x] Dashboard UI (Phase 9 KPI 1–4 now show live data: Current Balance, Total Revenue, Total Expenses, Net Profit)
-- [ ] Phase 10 — Reports and CSV
+- [x] Phase 9 — Dashboard UI (KPI cards, native transaction feeds, date range filtering, Chart.js trend curves)
+- [x] Phase 10 — Reports and CSV (Financial Summary P&L, Income, Expense, Transfer detailed reports, category breakdown, chunked streamed CSV export)
 - [ ] Phase 11 — Audit Trail (Full UI and history review functionality remaining)
 - [ ] Phase 12 — Stabilization
 
@@ -41,7 +41,7 @@ None.
 - `tests/Feature/AuthenticationTest.php` (8 tests passed).
 - `tests/Feature/AccountTest.php` (10 tests passed).
 - `tests/Feature/MenuTest.php` (14 tests passed).
-- `tests/Feature/DashboardTest.php` (5 tests passed).
+- `tests/Feature/DashboardTest.php` (10 tests passed).
 - `tests/Feature/ExampleTest.php` (1 test passed).
 - `tests/Unit/ExampleTest.php` (1 test passed).
 - `tests/Feature/IncomeTest.php` (35 tests passed).
@@ -49,7 +49,8 @@ None.
 - `tests/Feature/PaymentConfirmationTest.php` (37 tests passed).
 - `tests/Feature/Phase6CancellationAndEditingTest.php` (40 tests passed — includes 6 audit foundation tests).
 - `tests/Feature/TransferTest.php` (10 tests passed).
-- Full suite: 204 tests, 479 assertions — all green. Verified 2026-08-15.
+- `tests/Feature/ReportTest.php` (12 tests passed).
+- Full suite: 221 tests, 567 assertions — all green. Verified 2026-08-15.
 
 ## Known issues
 

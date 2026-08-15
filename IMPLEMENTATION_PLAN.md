@@ -41,8 +41,9 @@ Features: KPI cards (Current Balance, Total Revenue, Total Expenses, Net Profit)
 Tests: every KPI formula, date ranges, empty state.
 
 ## Phase 10 — Reports and CSV
-Features: filters, search, pagination, sorting, CSV export.
-Tests: filtered data, date range, status, CSV contents.
+Status: Completed & Verified.
+Features: Financial Summary (P&L), Income, Expense, Transfer detailed reports, presets & custom date filters, category breakdown, chunked streamed CSV export.
+Tests: mandatory Net Profit calculation, Gross Profit, Asset expense exclusion, filters, CSV streaming & BOM headers, empty state, date validation.
 
 ## Phase 11 — Audit Trail
 Features: audit logging and history review.

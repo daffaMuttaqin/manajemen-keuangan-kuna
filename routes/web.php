@@ -21,6 +21,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/income', \App\Livewire\Income\ManageIncome::class)->name('income.index');
     Route::get('/expense', \App\Livewire\Expense\ManageExpense::class)->name('expense.index');
     Route::get('/transfers', \App\Livewire\Transfer\ManageTransfers::class)->name('transfers.index');
+
+    Route::get('/reports', \App\Livewire\Reports\ManageReports::class)->name('reports.index');
+    Route::get('/reports/export/{type}', [\App\Http\Controllers\ReportExportController::class, 'export'])->name('reports.export');
 });
 
 
