@@ -91,10 +91,11 @@
                     Expense
                 </a>
 
-                <div class="flex items-center justify-between px-3 py-2 text-sm text-on-surface-variant/40 cursor-not-allowed">
-                    <span class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">swap_horiz</span> Transfers</span>
-                    <span class="text-[10px] text-outline-variant">Phase 7</span>
-                </div>
+                <a href="{{ route('transfers.index') }}"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition {{ request()->routeIs('transfers.*') ? 'bg-primary-container/20 text-primary border-l-2 border-primary' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' }}">
+                    <span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+                    Transfers
+                </a>
 
                 <div class="flex items-center justify-between px-3 py-2 text-sm text-on-surface-variant/40 cursor-not-allowed">
                     <span class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">assessment</span> Reports</span>

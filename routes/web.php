@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/menu', \App\Livewire\Menu\ManageMenu::class)->name('menu.index');
     Route::get('/income', \App\Livewire\Income\ManageIncome::class)->name('income.index');
     Route::get('/expense', \App\Livewire\Expense\ManageExpense::class)->name('expense.index');
+    Route::get('/transfers', \App\Livewire\Transfer\ManageTransfers::class)->name('transfers.index');
 });
 
 

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Account;
 use App\Models\ExpenseTransaction;
 use App\Models\IncomeTransaction;
+use App\Models\Transfer;
 
 class AccountBalanceService
 {
@@ -15,15 +16,16 @@ class AccountBalanceService
      *   balance = opening_balance
      *           + SUM(active paid income transactions for this account)   [Phase 4]
      *           - SUM(active paid expense transactions for this account)  [Phase 4]
-     *           +/- transfers                                             [Phase 7, future]
+     *           + SUM(active transfers credited to this account)          [Phase 7]
+     *           - SUM(active transfers debited from this account)         [Phase 7]
      *           +/- loan movements                                        [Phase 8, future]
      *
-     * Only active (record_status='active') + paid (payment_status='paid') rows
-     * contribute to the balance. This enforces:
+     * Only active (record_status='active') rows contribute to the balance. This enforces:
      *   INV-001 — Paid income affects the account exactly once.
      *   INV-002 — Paid expense affects the account exactly once.
      *   INV-003 — Unpaid income never changes cash.
      *   INV-004 — Unpaid expense never changes cash.
+     *   INV-005 — Transfer changes account distribution but not total company balance.
      *   INV-009 — Cancelled records do not contribute.
      */
     public function calculateBalance(Account $account): float
@@ -46,7 +48,20 @@ class AccountBalanceService
 
         $balance -= $expenseTotal;
 
-        // Phase 7 transfers will be added here.
+        // Phase 7: Add incoming active transfers credited to this account. (INV-005, INV-009)
+        $transferInTotal = (float) Transfer::where('to_account_id', $account->id)
+            ->where('record_status', 'active')
+            ->sum('amount');
+
+        $balance += $transferInTotal;
+
+        // Phase 7: Subtract outgoing active transfers debited from this account. (INV-005, INV-009)
+        $transferOutTotal = (float) Transfer::where('from_account_id', $account->id)
+            ->where('record_status', 'active')
+            ->sum('amount');
+
+        $balance -= $transferOutTotal;
+
         // Phase 8 loan movements will be added here.
 
         return $balance;
