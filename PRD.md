@@ -37,14 +37,27 @@ A simple internal cash-basis finance management application for Kuna Patisserie 
 
 - Paid Income -> cash inflow + Revenue + Gross Profit + Net Profit
 - Unpaid Income -> Outstanding Receivable only
-- Paid Expense -> cash outflow + Expense
+- Paid Expense (Profit-Eligible) -> cash outflow + Expense + reduces Net Profit
+- Paid Expense (Asset) -> cash outflow + Expense record; does NOT reduce Net Profit or Gross Profit
 - Unpaid Expense -> Outstanding Payable only
 - Loan principal received -> cash inflow + loan liability; not Revenue
 - Loan principal repayment -> cash outflow + liability reduction; not ordinary Expense
 - Transfer -> account redistribution; no Revenue/Expense/Profit effect
 - Opening balance -> initial account state; no Revenue/Profit effect
-- Asset purchase -> cash outflow + asset acquisition; excluded from COGS/OpEx/Gross Profit/Net Profit in V1
+- Asset purchase / Asset expense -> cash outflow + Expense transaction record; excluded from COGS/OpEx/Gross Profit/Net Profit calculation in V1
 - Cancelled records remain in history but are excluded from active totals.
+
+## Expense model & categories
+
+Expense transactions require:
+- `transaction_name`: string (required) — dedicated name/title for the expense
+- `description`: text (optional) — notes or additional details
+- `expense_category`: one of:
+  - Profit-Eligible Categories (reduces Net Profit): `COGS / Cake Production` (or `COGS`), `Operational`, `Marketing`, `Salary`, `Rent`, `Employee Salaries`
+  - Non-Profit-Eligible Category: `Asset` (decreases cash balance when paid, but excluded from Net Profit calculation)
+
+Table Display Format:
+`Date | Transaction Name | Category / Description | Amount | Account | Status | Actions`
 
 ## Core formulas
 
@@ -52,15 +65,17 @@ A simple internal cash-basis finance management application for Kuna Patisserie 
 
 `Gross Profit = Revenue - COGS`
 
-`Operating Expense = Operational + Marketing + Rent + Employee Salaries + Other`
+`Profit-Eligible Expenses = Sum of active paid expenses in [COGS, Operational, Marketing, Salary, Rent, Employee Salaries]`
 
-`Net Profit = Gross Profit - Operating Expense`
+`Net Profit = Revenue - Profit-Eligible Expenses`
 
 `Net Financial Position = Current Balance + Outstanding Receivables - Outstanding Payables - Outstanding Loan Principal`
 
 Revenue = active paid income in the selected reporting period.
 
-COGS = active paid expenses categorized `COGS / Cake Production`.
+COGS = active paid expenses categorized `COGS / Cake Production` (or `COGS`).
+
+Dashboard KPI Card 4: Renamed to `Net Profit` and calculated using `Net Profit = Revenue - Profit-Eligible Expenses`. Separate cash flow charts remain cash flow charts.
 
 ## Critical lifecycle rules
 

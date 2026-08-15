@@ -20,6 +20,7 @@ class ManageExpense extends Component
     // Form fields
     // -------------------------------------------------------------------------
     public string $transaction_date = '';
+    public string $transaction_name = '';
     public string $expense_category = '';
     public string $description = '';
     public string $amount = '';
@@ -51,6 +52,7 @@ class ManageExpense extends Component
     {
         return [
             'transaction_date'  => 'required|date',
+            'transaction_name'  => 'required|string|max:150',
             'expense_category'  => ['required', 'string', Rule::in(ExpenseTransaction::CATEGORIES)],
             'description'       => 'nullable|string|max:5000',
             'amount'            => 'required|numeric|min:0.01',
@@ -69,6 +71,7 @@ class ManageExpense extends Component
     public function mount(): void
     {
         $this->transaction_date = now()->format('Y-m-d');
+        $this->transaction_name = 'Expense Transaction';
     }
 
     // -------------------------------------------------------------------------
@@ -110,6 +113,7 @@ class ManageExpense extends Component
 
         $this->editingExpenseId = $expense->id;
         $this->transaction_date = $expense->transaction_date->format('Y-m-d');
+        $this->transaction_name = $expense->transaction_name ?? '';
         $this->expense_category = $expense->expense_category;
         $this->description      = $expense->description ?? '';
         $this->amount           = (string) $expense->amount;
@@ -148,6 +152,7 @@ class ManageExpense extends Component
                 $expense = ExpenseTransaction::findOrFail($this->editingExpenseId);
                 $service->updateExpenseTransaction($expense, [
                     'transaction_date' => $this->transaction_date,
+                    'transaction_name' => $this->transaction_name,
                     'expense_category' => $this->expense_category,
                     'description'      => $this->description ?: null,
                     'amount'           => $this->amount,
@@ -158,6 +163,7 @@ class ManageExpense extends Component
             } else {
                 $service->createExpenseTransaction([
                     'transaction_date' => $this->transaction_date,
+                    'transaction_name' => $this->transaction_name,
                     'expense_category' => $this->expense_category,
                     'description'      => $this->description ?: null,
                     'amount'           => $this->amount,
@@ -274,6 +280,7 @@ class ManageExpense extends Component
     {
         $this->editingExpenseId  = null;
         $this->transaction_date  = now()->format('Y-m-d');
+        $this->transaction_name  = 'Expense Transaction';
         $this->expense_category  = '';
         $this->description       = '';
         $this->amount            = '';
@@ -289,11 +296,12 @@ class ManageExpense extends Component
     {
         $query = ExpenseTransaction::with(['account']);
 
-        // Search: match against transaction_id prefix, category, description.
+        // Search: match against transaction_id prefix, transaction_name, category, description.
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
                 $q->where('transaction_id', 'like', $search . '%')
+                  ->orWhere('transaction_name', 'like', '%' . $search . '%')
                   ->orWhere('expense_category', 'like', '%' . $search . '%')
                   ->orWhere('description', 'like', '%' . $search . '%');
             });

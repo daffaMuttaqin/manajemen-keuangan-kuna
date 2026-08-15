@@ -141,6 +141,7 @@ class ExpenseCalculationService
             return ExpenseTransaction::create([
                 'transaction_id'   => $transactionId,
                 'transaction_date' => $data['transaction_date'],
+                'transaction_name' => $data['transaction_name'] ?? 'Expense Transaction',
                 'expense_category' => $data['expense_category'],
                 'description'      => $data['description'] ?? null,
                 'amount'           => $amountStr,
@@ -158,6 +159,7 @@ class ExpenseCalculationService
      *
      * @param ExpenseTransaction $expense
      * @param array $data
+     * @param User|null $performer
      * @return ExpenseTransaction
      *
      * @throws InvalidArgumentException for invariant violations.
@@ -210,13 +212,16 @@ class ExpenseCalculationService
             }
 
             $beforeState = [
-                'amount'         => (string) $expense->amount,
-                'account_id'     => $expense->account_id,
-                'payment_status' => $expense->payment_status,
+                'transaction_name' => $expense->transaction_name,
+                'expense_category' => $expense->expense_category,
+                'amount'           => (string) $expense->amount,
+                'account_id'       => $expense->account_id,
+                'payment_status'   => $expense->payment_status,
             ];
 
             $expense->update([
                 'transaction_date' => $data['transaction_date'],
+                'transaction_name' => $data['transaction_name'] ?? $expense->transaction_name ?? 'Expense Transaction',
                 'expense_category' => $data['expense_category'],
                 'description'      => $data['description'] ?? null,
                 'amount'           => $amountStr,
@@ -300,6 +305,33 @@ class ExpenseCalculationService
     {
         $query = ExpenseTransaction::where('record_status', 'active')
                                    ->where('payment_status', 'paid');
+
+        if ($from !== null) {
+            $query->where('transaction_date', '>=', $from);
+        }
+
+        if ($to !== null) {
+            $query->where('transaction_date', '<=', $to);
+        }
+
+        return (string) ($query->sum('amount') ?? '0');
+    }
+
+    /**
+     * Calculate profit-eligible expenses for active, paid expense transactions.
+     *
+     * Only categories in ExpenseTransaction::PROFIT_ELIGIBLE_CATEGORIES reduce Net Profit.
+     * Asset expense and non-eligible categories are excluded from profit calculations.
+     *
+     * @param string|null $from Y-m-d
+     * @param string|null $to   Y-m-d
+     * @return string
+     */
+    public function calculateProfitEligibleExpenses(?string $from = null, ?string $to = null): string
+    {
+        $query = ExpenseTransaction::where('record_status', 'active')
+                                   ->where('payment_status', 'paid')
+                                   ->whereIn('expense_category', ExpenseTransaction::PROFIT_ELIGIBLE_CATEGORIES);
 
         if ($from !== null) {
             $query->where('transaction_date', '>=', $from);

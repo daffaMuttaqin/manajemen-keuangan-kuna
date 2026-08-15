@@ -24,6 +24,8 @@ class DashboardController extends Controller
         $activeMenuItemsCount = MenuItem::where('is_active', true)->count();
         $totalRevenue         = (float) $incomeService->calculateRevenue();
         $totalExpenses        = (float) $expenseService->calculateTotalExpenses();
+        $profitEligibleExp    = (float) $expenseService->calculateProfitEligibleExpenses();
+        $netProfit            = $totalRevenue - $profitEligibleExp;
 
         return view('dashboard', [
             'accounts'             => $accounts,
@@ -32,6 +34,7 @@ class DashboardController extends Controller
             'balanceService'       => $balanceService,
             'totalRevenue'         => $totalRevenue,
             'totalExpenses'        => $totalExpenses,
+            'netProfit'            => $netProfit,
         ]);
     }
 }

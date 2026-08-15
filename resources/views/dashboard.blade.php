@@ -73,20 +73,20 @@
             </p>
         </div>
 
-        <!-- KPI 4: Net Cash Flow (Phase 4+ Placeholder) -->
-        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5 opacity-90">
+        <!-- KPI 4: Net Profit (Live Authoritative Formula) -->
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Net Cash Flow</span>
-                <div class="w-8 h-8 rounded bg-amber-500/10 flex items-center justify-center text-amber-400">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Net Profit</span>
+                <div class="w-8 h-8 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                     <span class="material-symbols-outlined text-[20px]">insights</span>
                 </div>
             </div>
-            <div class="text-xl font-bold text-on-surface">
-                Rp 0,00
+            <div class="text-xl font-bold {{ $netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
+                Rp {{ number_format($netProfit, 2, ',', '.') }}
             </div>
-            <p class="text-xs text-on-surface-variant/60 mt-2 flex items-center gap-1">
-                <span class="text-[10px] bg-surface-container-high px-1.5 py-0.5 rounded border border-outline-variant/40">Phase 4+</span>
-                Calculated profitability
+            <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full {{ $netProfit >= 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
+                Total Revenue minus Profit-Eligible Expenses
             </p>
         </div>
     </div>

@@ -42,6 +42,7 @@ class ExpenseTest extends TestCase
     {
         return array_merge([
             'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Test Expense Transaction',
             'expense_category' => 'Operational',
             'description'      => null,
             'amount'           => '50000',
@@ -57,6 +58,7 @@ class ExpenseTest extends TestCase
     {
         return array_merge([
             'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Test Unpaid Expense',
             'expense_category' => 'Operational',
             'description'      => null,
             'amount'           => '30000',
@@ -764,4 +766,158 @@ class ExpenseTest extends TestCase
 
         $this->assertEquals($user->id, $tx->created_by);
     }
+
+    // =========================================================================
+    // SECTION: TRANSACTION NAME & ASSET PROFIT-ELIGIBILITY TESTS
+    // =========================================================================
+
+    public function test_expense_transaction_name_is_stored_and_displayed(): void
+    {
+        $user = $this->makeUser();
+        $account = $this->makeActiveAccount(['opening_balance' => 500000]);
+        $service = app(ExpenseCalculationService::class);
+
+        $tx = $service->createExpenseTransaction([
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Oven Equipment Purchase',
+            'expense_category' => 'Asset',
+            'description'      => 'Baking oven for kitchen',
+            'amount'           => '150000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        $this->assertEquals('Oven Equipment Purchase', $tx->transaction_name);
+        $this->assertDatabaseHas('expense_transactions', [
+            'id'               => $tx->id,
+            'transaction_name' => 'Oven Equipment Purchase',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(ManageExpense::class)
+            ->assertSee('Oven Equipment Purchase');
+    }
+
+    public function test_paid_asset_decreases_cash_balance_but_does_not_reduce_net_profit(): void
+    {
+        $user = $this->makeUser();
+        $account = $this->makeActiveAccount(['opening_balance' => 1000000]);
+        $expenseService = app(ExpenseCalculationService::class);
+        $balanceService = app(AccountBalanceService::class);
+
+        // Paid Asset expense of 300,000
+        $expenseService->createExpenseTransaction([
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'New Mixer Machine',
+            'expense_category' => 'Asset',
+            'amount'           => '300000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        // Cash account is reduced by 300,000 (1,000,000 -> 700,000)
+        $this->assertEquals(700000.00, $balanceService->calculateBalance($account));
+
+        // Profit-eligible expenses sum is 0
+        $this->assertEquals('0', $expenseService->calculateProfitEligibleExpenses());
+
+        // Total expenses sum still includes Asset
+        $this->assertEquals('300000.00', $expenseService->calculateTotalExpenses());
+    }
+
+    public function test_profit_eligible_expense_categories_reduce_net_profit(): void
+    {
+        $user = $this->makeUser();
+        $account = $this->makeActiveAccount(['opening_balance' => 2000000]);
+        $service = app(ExpenseCalculationService::class);
+
+        $categories = [
+            'COGS / Cake Production' => '50000',
+            'Operational'            => '40000',
+            'Marketing'              => '30000',
+            'Salary'                 => '20000',
+            'Rent'                   => '10000',
+            'Employee Salaries'      => '15000',
+        ];
+
+        foreach ($categories as $cat => $amt) {
+            $service->createExpenseTransaction([
+                'transaction_date' => now()->format('Y-m-d'),
+                'transaction_name' => 'Expense ' . $cat,
+                'expense_category' => $cat,
+                'amount'           => $amt,
+                'account_id'       => $account->id,
+                'payment_status'   => 'paid',
+            ], $user);
+        }
+
+        // Total profit-eligible expenses: 50000 + 40000 + 30000 + 20000 + 10000 + 15000 = 165000
+        $this->assertEquals('165000.00', $service->calculateProfitEligibleExpenses());
+    }
+
+    public function test_editing_expense_between_asset_and_profit_eligible_updates_net_profit(): void
+    {
+        $user = $this->makeUser();
+        $account = $this->makeActiveAccount(['opening_balance' => 1000000]);
+        $service = app(ExpenseCalculationService::class);
+
+        // Initially created as Asset (non-profit-eligible)
+        $expense = $service->createExpenseTransaction([
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Ambiguous Item',
+            'expense_category' => 'Asset',
+            'amount'           => '100000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        $this->assertEquals('0', $service->calculateProfitEligibleExpenses());
+
+        // Edit category from Asset -> Operational (profit-eligible)
+        $service->updateExpenseTransaction($expense, [
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Ambiguous Item',
+            'expense_category' => 'Operational',
+            'amount'           => '100000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        $this->assertEquals('100000.00', $service->calculateProfitEligibleExpenses());
+
+        // Edit back from Operational -> Asset
+        $service->updateExpenseTransaction($expense, [
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Ambiguous Item',
+            'expense_category' => 'Asset',
+            'amount'           => '100000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        $this->assertEquals('0', $service->calculateProfitEligibleExpenses());
+    }
+
+    public function test_cancelling_asset_expense_does_not_alter_profit_eligible_expenses(): void
+    {
+        $user = $this->makeUser();
+        $account = $this->makeActiveAccount(['opening_balance' => 1000000]);
+        $service = app(ExpenseCalculationService::class);
+
+        $expense = $service->createExpenseTransaction([
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Asset to Cancel',
+            'expense_category' => 'Asset',
+            'amount'           => '200000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        $this->assertEquals('0', $service->calculateProfitEligibleExpenses());
+
+        $service->cancelExpenseTransaction($expense, $user);
+
+        $this->assertEquals('0', $service->calculateProfitEligibleExpenses());
+    }
 }
+

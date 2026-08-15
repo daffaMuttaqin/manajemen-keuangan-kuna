@@ -85,9 +85,9 @@ Inactive accounts cannot be used for new financial transactions.
 
 `Gross Profit = Revenue - COGS`
 
-`Operating Expense = Operational + Marketing + Rent + Employee Salaries + Other`
+`Profit-Eligible Expenses = Sum of active paid expenses in [COGS, Operational, Marketing, Salary, Rent, Employee Salaries]`
 
-`Net Profit = Gross Profit - Operating Expense`
+`Net Profit = Revenue - Profit-Eligible Expenses`
 
 `Net Financial Position = Current Balance + Outstanding Receivables - Outstanding Payables - Outstanding Loan Principal`
 

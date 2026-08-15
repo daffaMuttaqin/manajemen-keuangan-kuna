@@ -89,6 +89,21 @@
                             </div>
                         </div>
 
+                        {{-- Transaction Name --}}
+                        <div>
+                            <label for="transaction_name" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+                                Transaction Name <span class="text-error">*</span>
+                            </label>
+                            <input type="text"
+                                   id="transaction_name"
+                                   wire:model="transaction_name"
+                                   placeholder="e.g. Flour and Sugar Supply Purchase"
+                                   class="w-full h-10 bg-background border @error('transaction_name') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                            @error('transaction_name')
+                                <p class="text-xs text-error mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         {{-- Expense Category --}}
                         <div>
                             <label for="expense_category" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
@@ -311,6 +326,7 @@
                 <thead class="bg-surface-container border-b border-outline-variant">
                     <tr>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
+                        <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Transaction Name</th>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Category / Description</th>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Amount</th>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Account</th>
@@ -323,23 +339,28 @@
                         <tr class="hover:bg-surface-container/50 transition {{ $tx->isCancelled() ? 'opacity-50' : '' }}">
 
                             {{-- Date + Transaction ID --}}
-                            <td class="py-3.5 px-4">
+                            <td class="py-3.5 px-4 whitespace-nowrap">
                                 <p class="text-sm font-medium text-on-surface">{{ $tx->transaction_date->format('d M Y') }}</p>
                                 <p class="text-[10px] font-mono text-on-surface-variant/60 mt-0.5">{{ substr($tx->transaction_id, 0, 8) }}...</p>
                             </td>
 
+                            {{-- Transaction Name --}}
+                            <td class="py-3.5 px-4">
+                                <p class="text-sm font-semibold text-on-surface">{{ $tx->transaction_name }}</p>
+                            </td>
+
                             {{-- Category + Description --}}
                             <td class="py-3.5 px-4">
-                                <p class="text-sm font-semibold text-on-surface">{{ $tx->expense_category }}</p>
+                                <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container-high text-on-surface border border-outline-variant/40">
+                                    {{ $tx->expense_category }}
+                                </span>
                                 @if($tx->description)
-                                    <p class="text-xs text-on-surface-variant/60 mt-0.5 truncate max-w-[220px]">{{ $tx->description }}</p>
-                                @else
-                                    <p class="text-xs text-on-surface-variant/30 mt-0.5">—</p>
+                                    <p class="text-xs text-on-surface-variant/60 mt-1 truncate max-w-[200px]">{{ $tx->description }}</p>
                                 @endif
                             </td>
 
                             {{-- Amount --}}
-                            <td class="py-3.5 px-4">
+                            <td class="py-3.5 px-4 whitespace-nowrap">
                                 <p class="text-sm font-bold text-rose-400 font-mono">Rp {{ number_format($tx->amount, 2, ',', '.') }}</p>
                             </td>
 

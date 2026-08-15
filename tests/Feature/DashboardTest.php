@@ -63,4 +63,57 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Active Menu Items');
     }
+
+    public function test_dashboard_displays_net_profit_kpi(): void
+    {
+        $user = User::factory()->create();
+        $account = Account::create([
+            'name' => 'Main Account',
+            'account_type' => 'bank',
+            'opening_balance' => 1000000.00,
+            'is_active' => true,
+        ]);
+
+        $item = MenuItem::create([
+            'name' => 'Opera Cake',
+            'category' => 'Cake Sales',
+            'current_price' => 1000000.00,
+            'is_active' => true,
+        ]);
+
+        app(\App\Services\IncomeCalculationService::class)->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '1',
+            'discount_percentage' => '0',
+            'category'            => 'Cake Sales',
+            'description'         => 'Test Revenue',
+            'account_id'          => $account->id,
+            'payment_status'      => 'paid',
+        ], $user);
+
+        app(\App\Services\ExpenseCalculationService::class)->createExpenseTransaction([
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Operational Expense',
+            'expense_category' => 'Operational',
+            'amount'           => '200000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        // Asset expense of 500,000 does NOT reduce Net Profit
+        app(\App\Services\ExpenseCalculationService::class)->createExpenseTransaction([
+            'transaction_date' => now()->format('Y-m-d'),
+            'transaction_name' => 'Asset Purchase',
+            'expense_category' => 'Asset',
+            'amount'           => '500000',
+            'account_id'       => $account->id,
+            'payment_status'   => 'paid',
+        ], $user);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertStatus(200);
+        $response->assertSee('Net Profit');
+    }
 }

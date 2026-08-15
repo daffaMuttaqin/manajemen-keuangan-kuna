@@ -12,22 +12,34 @@ class ExpenseTransaction extends Model
 
     /**
      * PRD expense categories for V1.
-     * From PRD Operating Expense formula:
-     *   COGS / Cake Production → reduces Gross Profit
-     *   Operational, Marketing, Rent, Employee Salaries, Other → reduces Net Profit (OpEx)
+     * Profit-eligible categories: COGS / Cake Production, Operational, Marketing, Salary, Rent, Employee Salaries.
+     * Non-profit-eligible: Asset (decreases cash when paid, excluded from Net Profit).
      */
     public const CATEGORIES = [
         'COGS / Cake Production',
         'Operational',
         'Marketing',
+        'Salary',
         'Rent',
         'Employee Salaries',
+        'Asset',
         'Other',
+    ];
+
+    public const PROFIT_ELIGIBLE_CATEGORIES = [
+        'COGS / Cake Production',
+        'COGS',
+        'Operational',
+        'Marketing',
+        'Salary',
+        'Rent',
+        'Employee Salaries',
     ];
 
     protected $fillable = [
         'transaction_id',
         'transaction_date',
+        'transaction_name',
         'expense_category',
         'description',
         'amount',
