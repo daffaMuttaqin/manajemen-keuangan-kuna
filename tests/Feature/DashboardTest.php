@@ -44,7 +44,7 @@ class DashboardTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Main Operational Account');
-        $response->assertSee('15.000.000,00');
+        $response->assertSee('15.000.000');
     }
 
     public function test_dashboard_displays_active_menu_items_count(): void

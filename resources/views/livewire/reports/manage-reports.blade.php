@@ -104,7 +104,7 @@
                 <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
                     <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
                     <div class="text-xl font-bold text-emerald-400 mt-2">
-                        Rp {{ number_format($summaryData['total_revenue'], 2, ',', '.') }}
+                        {{ \App\Support\Format::currency($summaryData['total_revenue']) }}
                     </div>
                     <p class="text-xs text-on-surface-variant/70 mt-1">Active paid sales & income</p>
                 </div>
@@ -113,7 +113,7 @@
                 <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
                     <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">COGS</span>
                     <div class="text-xl font-bold text-rose-400 mt-2">
-                        Rp {{ number_format($summaryData['cogs'], 2, ',', '.') }}
+                        {{ \App\Support\Format::currency($summaryData['cogs']) }}
                     </div>
                     <p class="text-xs text-on-surface-variant/70 mt-1">Cost of Goods Sold / Production</p>
                 </div>
@@ -122,7 +122,7 @@
                 <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
                     <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Gross Profit</span>
                     <div class="text-xl font-bold {{ $summaryData['gross_profit'] >= 0 ? 'text-emerald-400' : 'text-rose-400' }} mt-2">
-                        Rp {{ number_format($summaryData['gross_profit'], 2, ',', '.') }}
+                        {{ \App\Support\Format::currency($summaryData['gross_profit']) }}
                     </div>
                     <p class="text-xs text-on-surface-variant/70 mt-1">Revenue minus COGS</p>
                 </div>
@@ -131,7 +131,7 @@
                 <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
                     <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Net Profit</span>
                     <div class="text-xl font-bold {{ $summaryData['net_profit'] >= 0 ? 'text-amber-400' : 'text-rose-400' }} mt-2">
-                        Rp {{ number_format($summaryData['net_profit'], 2, ',', '.') }}
+                        {{ \App\Support\Format::currency($summaryData['net_profit']) }}
                     </div>
                     <p class="text-xs text-on-surface-variant/70 mt-1">Revenue minus Profit-Eligible Expenses</p>
                 </div>
@@ -142,7 +142,7 @@
                 <div class="bg-surface-container border border-outline-variant/60 rounded-lg p-4 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-on-surface-variant">Profit-Eligible OpEx</p>
-                        <p class="text-base font-bold text-on-surface">Rp {{ number_format($summaryData['profit_eligible_opex'], 2, ',', '.') }}</p>
+                        <p class="text-base font-bold text-on-surface">{{ \App\Support\Format::currency($summaryData['profit_eligible_opex']) }}</p>
                     </div>
                     <span class="text-[10px] px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">Operational, Marketing, Salary, Rent</span>
                 </div>
@@ -150,7 +150,7 @@
                 <div class="bg-surface-container border border-outline-variant/60 rounded-lg p-4 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-on-surface-variant">Total Expenses (includes Asset)</p>
-                        <p class="text-base font-bold text-rose-400">Rp {{ number_format($summaryData['total_expenses'], 2, ',', '.') }}</p>
+                        <p class="text-base font-bold text-rose-400">{{ \App\Support\Format::currency($summaryData['total_expenses']) }}</p>
                     </div>
                     <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/10 text-rose-400">All paid outflows</span>
                 </div>
@@ -158,7 +158,7 @@
                 <div class="bg-surface-container border border-outline-variant/60 rounded-lg p-4 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-on-surface-variant">Asset Expenses</p>
-                        <p class="text-base font-bold text-primary">Rp {{ number_format($summaryData['asset_expenses'], 2, ',', '.') }}</p>
+                        <p class="text-base font-bold text-primary">{{ \App\Support\Format::currency($summaryData['asset_expenses']) }}</p>
                     </div>
                     <span class="text-[10px] px-2 py-0.5 rounded bg-primary-container/20 text-primary">Excluded from Net Profit</span>
                 </div>
@@ -196,7 +196,7 @@
                                     </td>
                                     <td class="py-3.5 px-4">
                                         <p class="text-xs font-bold font-mono text-on-surface">
-                                            Rp {{ number_format($cat['total_amount'], 2, ',', '.') }}
+                                            {{ \App\Support\Format::currency($cat['total_amount']) }}
                                         </p>
                                     </td>
                                     <td class="py-3.5 px-4 text-right">
@@ -290,8 +290,8 @@
                                     <td class="py-3 px-4 text-xs font-mono text-on-surface-variant whitespace-nowrap">{{ Str::limit($tx->transaction_id, 13) }}</td>
                                     <td class="py-3 px-4 text-xs font-semibold text-on-surface">{{ $tx->menuItem->name ?? 'N/A' }}</td>
                                     <td class="py-3 px-4 text-xs text-on-surface-variant">{{ $tx->category }}</td>
-                                    <td class="py-3 px-4 text-xs text-center font-mono">{{ $tx->quantity }}</td>
-                                    <td class="py-3 px-4 text-xs font-bold font-mono text-emerald-400 whitespace-nowrap">Rp {{ number_format($tx->total_amount, 2, ',', '.') }}</td>
+                                    <td class="py-3 px-4 text-xs text-center font-mono">{{ \App\Support\Format::quantity($tx->quantity) }}</td>
+                                    <td class="py-3 px-4 text-xs font-bold font-mono text-emerald-400 whitespace-nowrap">{{ \App\Support\Format::currency($tx->total_amount) }}</td>
                                     <td class="py-3 px-4 text-xs text-on-surface-variant whitespace-nowrap">{{ $tx->account->name ?? 'N/A' }}</td>
                                     <td class="py-3 px-4 text-xs whitespace-nowrap">
                                         <span class="px-2 py-0.5 rounded text-[11px] font-semibold {{ $tx->payment_status === 'paid' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400' }}">
@@ -389,7 +389,7 @@
                                     <td class="py-3 px-4 text-xs font-medium text-on-surface whitespace-nowrap">{{ $tx->transaction_date->format('d M Y') }}</td>
                                     <td class="py-3 px-4 text-xs font-semibold text-on-surface">{{ $tx->transaction_name }}</td>
                                     <td class="py-3 px-4 text-xs text-on-surface-variant">{{ $tx->expense_category }}</td>
-                                    <td class="py-3 px-4 text-xs font-bold font-mono text-rose-400 whitespace-nowrap">Rp {{ number_format($tx->amount, 2, ',', '.') }}</td>
+                                    <td class="py-3 px-4 text-xs font-bold font-mono text-rose-400 whitespace-nowrap">{{ \App\Support\Format::currency($tx->amount) }}</td>
                                     <td class="py-3 px-4 text-xs text-on-surface-variant whitespace-nowrap">{{ $tx->account->name ?? 'N/A' }}</td>
                                     <td class="py-3 px-4 text-xs whitespace-nowrap">
                                         @if($tx->expense_category === 'Asset')
@@ -494,7 +494,7 @@
                                     <td class="py-3 px-4 text-xs font-mono text-on-surface-variant whitespace-nowrap">{{ Str::limit($tx->transfer_id, 13) }}</td>
                                     <td class="py-3 px-4 text-xs font-semibold text-on-surface whitespace-nowrap">{{ $tx->fromAccount->name ?? 'N/A' }}</td>
                                     <td class="py-3 px-4 text-xs font-semibold text-on-surface whitespace-nowrap">{{ $tx->toAccount->name ?? 'N/A' }}</td>
-                                    <td class="py-3 px-4 text-xs font-bold font-mono text-primary whitespace-nowrap">Rp {{ number_format($tx->amount, 2, ',', '.') }}</td>
+                                    <td class="py-3 px-4 text-xs font-bold font-mono text-primary whitespace-nowrap">{{ \App\Support\Format::currency($tx->amount) }}</td>
                                     <td class="py-3 px-4 text-xs text-on-surface-variant">{{ $tx->description ?? 'N/A' }}</td>
                                     <td class="py-3 px-4 text-xs text-right whitespace-nowrap">
                                         <span class="px-2 py-0.5 rounded text-[11px] font-semibold {{ $tx->record_status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400' }}">

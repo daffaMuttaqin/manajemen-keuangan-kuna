@@ -105,10 +105,10 @@
                                 {{ $account->account_type }}
                             </td>
                             <td class="py-3.5 px-4 text-sm text-on-surface-variant font-mono">
-                                Rp {{ number_format($account->opening_balance, 2, ',', '.') }}
+                                {{ \App\Support\Format::currency($account->opening_balance) }}
                             </td>
                             <td class="py-3.5 px-4 text-sm font-bold text-primary font-mono">
-                                Rp {{ number_format($balanceService->calculateBalance($account), 2, ',', '.') }}
+                                {{ \App\Support\Format::currency($balanceService->calculateBalance($account)) }}
                             </td>
                             <td class="py-3.5 px-4 text-xs">
                                 @if($account->is_active)
@@ -158,6 +158,6 @@
     <!-- Company Total Summary Card -->
     <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 flex justify-between items-center">
         <span class="text-sm font-medium text-on-surface-variant">Total Active Company Balance:</span>
-        <span class="text-lg font-bold text-on-surface font-mono">Rp {{ number_format($balanceService->calculateTotalCompanyBalance(), 2, ',', '.') }}</span>
+        <span class="text-lg font-bold text-on-surface font-mono">{{ \App\Support\Format::currency($balanceService->calculateTotalCompanyBalance()) }}</span>
     </div>
 </div>

@@ -791,6 +791,6 @@ class IncomeTest extends TestCase
 
         Livewire::test(ManageIncome::class)
             ->assertSeeHtml('Total Incomes')
-            ->assertSeeHtml('Rp 100.000,00');
+            ->assertSeeHtml('Rp 100.000');
     }
 }

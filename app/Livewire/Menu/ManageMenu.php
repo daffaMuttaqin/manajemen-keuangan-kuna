@@ -24,8 +24,25 @@ class ManageMenu extends Component
     #[Url(as: 'status')]
     public $statusFilter = 'all';
 
+    #[Url(as: 'period')]
+    public string $period = 'all_time';
+
+    #[Url(as: 'from')]
+    public ?string $from = null;
+
+    #[Url(as: 'to')]
+    public ?string $to = null;
+
     public $editingMenuItemId = null;
     public $isModalOpen = false;
+
+    public function setPresetPeriod(string $preset): void
+    {
+        $this->period = $preset;
+        $this->from   = null;
+        $this->to     = null;
+        $this->resetPage();
+    }
 
     public function rules()
     {
@@ -162,6 +179,11 @@ class ManageMenu extends Component
 
     public function render()
     {
+        $dateRange    = app(\App\Services\FinancialReportService::class)->resolveDateRange($this->period, $this->from, $this->to);
+        $fromDate     = $dateRange['fromDate'];
+        $toDate       = $dateRange['toDate'];
+        $activePeriod = $dateRange['period'];
+
         $query = MenuItem::query();
 
         if ($this->search !== '') {
@@ -180,8 +202,29 @@ class ManageMenu extends Component
 
         $menuItems = $query->orderBy('id', 'desc')->paginate(10);
 
+        // Sales Performance Metrics per Menu Item (Active Paid Income)
+        $salesQuery = \App\Models\IncomeTransaction::where('record_status', 'active')
+            ->where('payment_status', 'paid');
+
+        if ($fromDate !== null) {
+            $salesQuery->where('transaction_date', '>=', $fromDate);
+        }
+        if ($toDate !== null) {
+            $salesQuery->where('transaction_date', '<=', $toDate);
+        }
+
+        $salesStats = $salesQuery
+            ->selectRaw('menu_item_id, SUM(quantity) as total_quantity_sold, SUM(total_amount) as total_revenue')
+            ->groupBy('menu_item_id')
+            ->get()
+            ->keyBy('menu_item_id');
+
         return view('livewire.menu.manage-menu', [
-            'menuItems' => $menuItems,
+            'menuItems'    => $menuItems,
+            'salesStats'   => $salesStats,
+            'activePeriod' => $activePeriod,
+            'fromDate'     => $fromDate,
+            'toDate'       => $toDate,
         ]);
     }
 }

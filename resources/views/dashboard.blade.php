@@ -87,7 +87,7 @@
                 </div>
             </div>
             <div class="text-xl font-bold text-primary">
-                Rp {{ number_format($totalBalance, 2, ',', '.') }}
+                {{ \App\Support\Format::currency($totalBalance) }}
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -104,7 +104,7 @@
                 </div>
             </div>
             <div class="text-xl font-bold text-emerald-400">
-                Rp {{ number_format($totalRevenue, 2, ',', '.') }}
+                {{ \App\Support\Format::currency($totalRevenue) }}
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -121,7 +121,7 @@
                 </div>
             </div>
             <div class="text-xl font-bold text-rose-400">
-                Rp {{ number_format($totalExpenses, 2, ',', '.') }}
+                {{ \App\Support\Format::currency($totalExpenses) }}
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
@@ -138,7 +138,7 @@
                 </div>
             </div>
             <div class="text-xl font-bold {{ $netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
-                Rp {{ number_format($netProfit, 2, ',', '.') }}
+                {{ \App\Support\Format::currency($netProfit) }}
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full {{ $netProfit >= 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
@@ -199,7 +199,7 @@
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm font-bold text-primary">Rp {{ number_format($balanceService->calculateBalance($account), 2, ',', '.') }}</p>
+                                <p class="text-sm font-bold text-primary">{{ \App\Support\Format::currency($balanceService->calculateBalance($account)) }}</p>
                                 <span class="text-[10px] text-emerald-400 font-medium">Active</span>
                             </div>
                         </div>
@@ -289,7 +289,7 @@
                                 {{-- Amount --}}
                                 <td class="py-3.5 px-4 whitespace-nowrap">
                                     <p class="text-xs font-bold font-mono {{ $tx['type'] === 'Income' ? 'text-emerald-400' : ($tx['type'] === 'Expense' ? 'text-rose-400' : 'text-primary') }}">
-                                        Rp {{ number_format($tx['amount'], 2, ',', '.') }}
+                                        {{ \App\Support\Format::currency($tx['amount']) }}
                                     </p>
                                 </td>
 

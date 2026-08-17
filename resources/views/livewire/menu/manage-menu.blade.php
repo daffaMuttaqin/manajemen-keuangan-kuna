@@ -67,36 +67,64 @@
         </div>
     @endif
 
-    <!-- Toolbar Section: Search & Status Filters -->
-    <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <!-- Search Input -->
-        <div class="relative flex-1 max-w-md">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-on-surface-variant">
-                search
-            </span>
-            <input type="text" 
-                   wire:model.live.debounce.300ms="search" 
-                   placeholder="Search item names or IDs..." 
-                   class="w-full h-10 bg-background border border-outline-variant text-on-surface rounded pl-10 pr-3 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50">
-        </div>
+    <!-- Toolbar Section: Period Selector, Search & Status Filters -->
+    <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <!-- Period Selector Presets -->
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Period:</span>
+                <div class="inline-flex items-center rounded-lg bg-surface-container border border-outline-variant p-1 text-xs">
+                    <button type="button" wire:click="setPresetPeriod('all_time')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'all_time' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        All-Time
+                    </button>
+                    <button type="button" wire:click="setPresetPeriod('this_month')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'this_month' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        This Month
+                    </button>
+                    <button type="button" wire:click="setPresetPeriod('last_month')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'last_month' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Last Month
+                    </button>
+                    <button type="button" wire:click="setPresetPeriod('this_year')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'this_year' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        This Year
+                    </button>
+                </div>
+            </div>
 
-        <!-- Status Filter Pills -->
-        <div class="flex items-center gap-1 bg-background p-1 border border-outline-variant rounded">
-            <button type="button" 
-                    wire:click="setStatusFilter('all')" 
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'all' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                All Items
-            </button>
-            <button type="button" 
-                    wire:click="setStatusFilter('active')" 
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'active' ? 'bg-emerald-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Active
-            </button>
-            <button type="button" 
-                    wire:click="setStatusFilter('inactive')" 
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'inactive' ? 'bg-rose-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Inactive
-            </button>
+            <!-- Search & Status Filters -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 lg:max-w-xl justify-end">
+                <!-- Search Input -->
+                <div class="relative flex-1">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-on-surface-variant">
+                        search
+                    </span>
+                    <input type="text" 
+                           wire:model.live.debounce.300ms="search" 
+                           placeholder="Search item names or IDs..." 
+                           class="w-full h-10 bg-background border border-outline-variant text-on-surface rounded pl-10 pr-3 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50">
+                </div>
+
+                <!-- Status Filter Pills -->
+                <div class="flex items-center gap-1 bg-background p-1 border border-outline-variant rounded">
+                    <button type="button" 
+                            wire:click="setStatusFilter('all')" 
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'all' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        All
+                    </button>
+                    <button type="button" 
+                            wire:click="setStatusFilter('active')" 
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'active' ? 'bg-emerald-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Active
+                    </button>
+                    <button type="button" 
+                            wire:click="setStatusFilter('inactive')" 
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'inactive' ? 'bg-rose-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Inactive
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -109,13 +137,20 @@
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">ID</th>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Item Name</th>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Category</th>
-                        <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Current Price (IDR)</th>
+                        <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Current Price</th>
+                        <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Sold</th>
+                        <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Revenue</th>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Status</th>
                         <th scope="col" class="py-3.5 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-outline-variant/40 bg-surface-container-low">
                     @forelse($menuItems as $item)
+                        @php
+                            $stats = $salesStats->get($item->id);
+                            $qtySold = $stats->total_quantity_sold ?? 0;
+                            $revenue = $stats->total_revenue ?? 0;
+                        @endphp
                         <tr class="hover:bg-surface-container/50 transition">
                             <td class="py-3.5 px-4 text-xs font-mono text-on-surface-variant">
                                 #{{ $item->id }}
@@ -127,7 +162,13 @@
                                 {{ $item->category }}
                             </td>
                             <td class="py-3.5 px-4 text-sm font-bold text-primary font-mono">
-                                Rp {{ number_format($item->current_price, 2, ',', '.') }}
+                                {{ \App\Support\Format::currency($item->current_price) }}
+                            </td>
+                            <td class="py-3.5 px-4 text-sm font-bold text-on-surface font-mono">
+                                {{ \App\Support\Format::quantity($qtySold) }}
+                            </td>
+                            <td class="py-3.5 px-4 text-sm font-bold text-emerald-400 font-mono">
+                                {{ \App\Support\Format::currency($revenue) }}
                             </td>
                             <td class="py-3.5 px-4 text-xs">
                                 @if($item->is_active)
@@ -160,7 +201,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-12 px-4 text-center text-on-surface-variant">
+                            <td colspan="8" class="py-12 px-4 text-center text-on-surface-variant">
                                 <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                     <span class="material-symbols-outlined text-[36px] text-on-surface-variant/40 mb-2">restaurant_menu</span>
                                     <p class="text-sm font-semibold text-on-surface">

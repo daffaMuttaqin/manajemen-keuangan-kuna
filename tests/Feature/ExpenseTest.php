@@ -962,7 +962,7 @@ class ExpenseTest extends TestCase
 
         Livewire::test(ManageExpense::class)
             ->assertSeeHtml('Total Expenses')
-            ->assertSeeHtml('Rp 50.000,00');
+            ->assertSeeHtml('Rp 50.000');
     }
 }
 

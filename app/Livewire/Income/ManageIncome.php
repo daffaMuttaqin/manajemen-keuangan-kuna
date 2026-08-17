@@ -47,6 +47,23 @@ class ManageIncome extends Component
     #[Url(as: 'record')]
     public string $recordFilter = 'active';  // active | cancelled | all
 
+    #[Url(as: 'period')]
+    public string $period = 'all_time';
+
+    #[Url(as: 'from')]
+    public ?string $from = null;
+
+    #[Url(as: 'to')]
+    public ?string $to = null;
+
+    public function setPresetPeriod(string $preset): void
+    {
+        $this->period = $preset;
+        $this->from   = null;
+        $this->to     = null;
+        $this->resetPage();
+    }
+
     // -------------------------------------------------------------------------
     // Validation rules
     // -------------------------------------------------------------------------
@@ -313,7 +330,20 @@ class ManageIncome extends Component
     // -------------------------------------------------------------------------
     public function render()
     {
+        $dateRange    = app(\App\Services\FinancialReportService::class)->resolveDateRange($this->period, $this->from, $this->to);
+        $fromDate     = $dateRange['fromDate'];
+        $toDate       = $dateRange['toDate'];
+        $activePeriod = $dateRange['period'];
+
         $query = IncomeTransaction::with(['menuItem', 'account']);
+
+        // Date period filter
+        if ($fromDate !== null) {
+            $query->where('transaction_date', '>=', $fromDate);
+        }
+        if ($toDate !== null) {
+            $query->where('transaction_date', '<=', $toDate);
+        }
 
         // Search: match against transaction_id prefix, menu item name, category, description.
         if ($this->search !== '') {
@@ -346,13 +376,16 @@ class ManageIncome extends Component
 
         $activeMenuItems  = MenuItem::where('is_active', true)->orderBy('name')->get();
         $activeAccounts   = Account::where('is_active', true)->orderBy('name')->get();
-        $totalIncome      = (float) app(IncomeCalculationService::class)->calculateRevenue();
+        $totalIncome      = (float) app(IncomeCalculationService::class)->calculateRevenue($fromDate, $toDate);
 
         return view('livewire.income.manage-income', [
             'incomeTransactions' => $incomeTransactions,
             'activeMenuItems'    => $activeMenuItems,
             'activeAccounts'     => $activeAccounts,
             'totalIncome'        => $totalIncome,
+            'activePeriod'       => $activePeriod,
+            'fromDate'           => $fromDate,
+            'toDate'             => $toDate,
         ]);
     }
 }

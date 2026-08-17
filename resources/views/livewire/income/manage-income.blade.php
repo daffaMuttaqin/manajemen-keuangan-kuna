@@ -40,7 +40,7 @@
                 </div>
             </div>
             <div class="text-xl font-bold text-emerald-400 font-mono">
-                Rp {{ number_format($totalIncome, 2, ',', '.') }}
+                {{ \App\Support\Format::currency($totalIncome) }}
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -119,7 +119,7 @@
                                 <option value="">— Select a Menu Item —</option>
                                 @foreach($activeMenuItems as $item)
                                     <option value="{{ $item->id }}">
-                                        {{ $item->name }} ({{ $item->category }}) — Rp {{ number_format($item->current_price, 0, ',', '.') }}
+                                        {{ $item->name }} ({{ $item->category }}) — {{ \App\Support\Format::currency($item->current_price) }}
                                     </option>
                                 @endforeach
                             </select>
@@ -131,7 +131,7 @@
                                 @if($selectedItem)
                                     <p class="text-xs text-on-surface-variant/70 mt-1.5 flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[14px] text-primary">info</span>
-                                        Current unit price: <strong class="text-primary ml-1">Rp {{ number_format($selectedItem->current_price, 2, ',', '.') }}</strong>
+                                        Current unit price: <strong class="text-primary ml-1">{{ \App\Support\Format::currency($selectedItem->current_price) }}</strong>
                                         — will be locked at creation.
                                     </p>
                                 @endif
@@ -311,56 +311,78 @@
     @endif
 
     {{-- ============================================================ --}}
-    {{-- Toolbar: Search + Filters --}}
+    {{-- Toolbar: Period Selector + Search + Filters --}}
     {{-- ============================================================ --}}
-    <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-4">
+    <div class="bg-surface-container-low border border-outline-variant rounded-lg p-4 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <!-- Period Selector Presets -->
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Period:</span>
+                <div class="inline-flex items-center rounded-lg bg-surface-container border border-outline-variant p-1 text-xs">
+                    <button type="button" wire:click="setPresetPeriod('all_time')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'all_time' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        All-Time
+                    </button>
+                    <button type="button" wire:click="setPresetPeriod('this_month')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'this_month' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        This Month
+                    </button>
+                    <button type="button" wire:click="setPresetPeriod('last_month')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'last_month' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Last Month
+                    </button>
+                    <button type="button" wire:click="setPresetPeriod('this_year')"
+                            class="px-2.5 py-1 rounded font-medium transition {{ $period === 'this_year' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        This Year
+                    </button>
+                </div>
+            </div>
 
-        {{-- Search --}}
-        <div class="relative flex-1 max-w-md">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-on-surface-variant">search</span>
-            <input type="text"
-                   id="income-search"
-                   wire:model.live.debounce.300ms="search"
-                   placeholder="Search by item, category, or transaction ID..."
-                   class="w-full h-10 bg-background border border-outline-variant text-on-surface rounded pl-10 pr-3 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50">
-        </div>
+            <!-- Search & Filters -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 lg:max-w-2xl justify-end">
+                {{-- Search --}}
+                <div class="relative flex-1">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[19px] text-on-surface-variant">search</span>
+                    <input type="text"
+                           id="income-search"
+                           wire:model.live.debounce.300ms="search"
+                           placeholder="Search item, category, ID..."
+                           class="w-full h-10 bg-background border border-outline-variant text-on-surface rounded pl-10 pr-3 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50">
+                </div>
 
-        {{-- Payment Status Filter --}}
-        <div class="flex items-center gap-1 bg-background p-1 border border-outline-variant rounded">
-            <button type="button"
-                    wire:click="setStatusFilter('all')"
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'all' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                All
-            </button>
-            <button type="button"
-                    wire:click="setStatusFilter('paid')"
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'paid' ? 'bg-emerald-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Paid
-            </button>
-            <button type="button"
-                    wire:click="setStatusFilter('unpaid')"
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'unpaid' ? 'bg-amber-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Unpaid
-            </button>
-        </div>
+                {{-- Payment Status Filter --}}
+                <div class="flex items-center gap-1 bg-background p-1 border border-outline-variant rounded">
+                    <button type="button"
+                            wire:click="setStatusFilter('all')"
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'all' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        All
+                    </button>
+                    <button type="button"
+                            wire:click="setStatusFilter('paid')"
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'paid' ? 'bg-emerald-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Paid
+                    </button>
+                    <button type="button"
+                            wire:click="setStatusFilter('unpaid')"
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $statusFilter === 'unpaid' ? 'bg-amber-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Unpaid
+                    </button>
+                </div>
 
-        {{-- Record Status Filter --}}
-        <div class="flex items-center gap-1 bg-background p-1 border border-outline-variant rounded">
-            <button type="button"
-                    wire:click="setRecordFilter('active')"
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $recordFilter === 'active' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Active
-            </button>
-            <button type="button"
-                    wire:click="setRecordFilter('cancelled')"
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $recordFilter === 'cancelled' ? 'bg-rose-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                Cancelled
-            </button>
-            <button type="button"
-                    wire:click="setRecordFilter('all')"
-                    class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $recordFilter === 'all' ? 'bg-surface-container-high text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
-                All Records
-            </button>
+                {{-- Record Status Filter --}}
+                <div class="flex items-center gap-1 bg-background p-1 border border-outline-variant rounded">
+                    <button type="button"
+                            wire:click="setRecordFilter('active')"
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $recordFilter === 'active' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Active
+                    </button>
+                    <button type="button"
+                            wire:click="setRecordFilter('cancelled')"
+                            class="px-3 py-1.5 rounded text-xs font-semibold transition {{ $recordFilter === 'cancelled' ? 'bg-rose-600 text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface' }}">
+                        Cancelled
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -403,15 +425,15 @@
 
                             {{-- Qty × Unit Price --}}
                             <td class="py-3.5 px-4">
-                                <p class="text-sm text-on-surface font-mono">{{ number_format($tx->quantity, 2, ',', '.') }}</p>
-                                <p class="text-xs text-on-surface-variant/70 font-mono">× Rp {{ number_format($tx->unit_price, 0, ',', '.') }}</p>
+                                <p class="text-sm text-on-surface font-mono">{{ \App\Support\Format::quantity($tx->quantity) }}</p>
+                                <p class="text-xs text-on-surface-variant/70 font-mono">× {{ \App\Support\Format::currency($tx->unit_price) }}</p>
                             </td>
 
                             {{-- Discount --}}
                             <td class="py-3.5 px-4">
                                 @if((float)$tx->discount_percentage > 0)
-                                    <p class="text-sm text-amber-400 font-mono">{{ number_format($tx->discount_percentage, 2, ',', '.') }}%</p>
-                                    <p class="text-xs text-on-surface-variant/70 font-mono">−Rp {{ number_format($tx->discount_amount, 0, ',', '.') }}</p>
+                                    <p class="text-sm text-amber-400 font-mono">{{ \App\Support\Format::percentage($tx->discount_percentage) }}</p>
+                                    <p class="text-xs text-on-surface-variant/70 font-mono">−{{ \App\Support\Format::currency($tx->discount_amount) }}</p>
                                 @else
                                     <p class="text-sm text-on-surface-variant/40">—</p>
                                 @endif
@@ -419,7 +441,7 @@
 
                             {{-- Total Amount --}}
                             <td class="py-3.5 px-4">
-                                <p class="text-sm font-bold text-primary font-mono">Rp {{ number_format($tx->total_amount, 2, ',', '.') }}</p>
+                                <p class="text-sm font-bold text-primary font-mono">{{ \App\Support\Format::currency($tx->total_amount) }}</p>
                             </td>
 
                             {{-- Account --}}

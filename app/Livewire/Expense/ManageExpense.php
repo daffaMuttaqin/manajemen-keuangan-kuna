@@ -45,6 +45,23 @@ class ManageExpense extends Component
     #[Url(as: 'record')]
     public string $recordFilter = 'active';  // active | cancelled | all
 
+    #[Url(as: 'period')]
+    public string $period = 'all_time';
+
+    #[Url(as: 'from')]
+    public ?string $from = null;
+
+    #[Url(as: 'to')]
+    public ?string $to = null;
+
+    public function setPresetPeriod(string $preset): void
+    {
+        $this->period = $preset;
+        $this->from   = null;
+        $this->to     = null;
+        $this->resetPage();
+    }
+
     // -------------------------------------------------------------------------
     // Validation rules
     // -------------------------------------------------------------------------
@@ -294,7 +311,20 @@ class ManageExpense extends Component
     // -------------------------------------------------------------------------
     public function render()
     {
+        $dateRange    = app(\App\Services\FinancialReportService::class)->resolveDateRange($this->period, $this->from, $this->to);
+        $fromDate     = $dateRange['fromDate'];
+        $toDate       = $dateRange['toDate'];
+        $activePeriod = $dateRange['period'];
+
         $query = ExpenseTransaction::with(['account']);
+
+        // Date period filter
+        if ($fromDate !== null) {
+            $query->where('transaction_date', '>=', $fromDate);
+        }
+        if ($toDate !== null) {
+            $query->where('transaction_date', '<=', $toDate);
+        }
 
         // Search: match against transaction_id prefix, transaction_name, category, description.
         if ($this->search !== '') {
@@ -326,13 +356,16 @@ class ManageExpense extends Component
                                      ->paginate(15);
 
         $activeAccounts = Account::where('is_active', true)->orderBy('name')->get();
-        $totalExpenses  = (float) app(ExpenseCalculationService::class)->calculateTotalExpenses();
+        $totalExpenses  = (float) app(ExpenseCalculationService::class)->calculateTotalExpenses($fromDate, $toDate);
 
         return view('livewire.expense.manage-expense', [
             'expenseTransactions'  => $expenseTransactions,
             'activeAccounts'       => $activeAccounts,
             'expenseCategories'    => ExpenseTransaction::CATEGORIES,
             'totalExpenses'        => $totalExpenses,
+            'activePeriod'         => $activePeriod,
+            'fromDate'             => $fromDate,
+            'toDate'               => $toDate,
         ]);
     }
 }

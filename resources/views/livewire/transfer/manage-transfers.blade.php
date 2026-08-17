@@ -87,7 +87,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-primary">
-                                Rp {{ number_format((float) $transfer->amount, 2, ',', '.') }}
+                                {{ \App\Support\Format::currency($transfer->amount) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($transfer->isActive())
@@ -163,7 +163,7 @@
                                     class="w-full bg-surface-container text-on-surface border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
                                 <option value="">Select Source Account</option>
                                 @foreach ($accounts as $acc)
-                                    <option value="{{ $acc->id }}">{{ $acc->name }} (Rp {{ number_format(app(\App\Services\AccountBalanceService::class)->calculateBalance($acc), 2, ',', '.') }})</option>
+                                    <option value="{{ $acc->id }}">{{ $acc->name }} ({{ \App\Support\Format::currency(app(\App\Services\AccountBalanceService::class)->calculateBalance($acc)) }})</option>
                                 @endforeach
                             </select>
                             @error('from_account_id') <span class="text-xs text-rose-400 mt-1 block">{{ $message }}</span> @enderror
@@ -175,7 +175,7 @@
                                     class="w-full bg-surface-container text-on-surface border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary">
                                 <option value="">Select Destination Account</option>
                                 @foreach ($accounts as $acc)
-                                    <option value="{{ $acc->id }}">{{ $acc->name }} (Rp {{ number_format(app(\App\Services\AccountBalanceService::class)->calculateBalance($acc), 2, ',', '.') }})</option>
+                                    <option value="{{ $acc->id }}">{{ $acc->name }} ({{ \App\Support\Format::currency(app(\App\Services\AccountBalanceService::class)->calculateBalance($acc)) }})</option>
                                 @endforeach
                             </select>
                             @error('to_account_id') <span class="text-xs text-rose-400 mt-1 block">{{ $message }}</span> @enderror
