@@ -350,8 +350,8 @@
                     {
                         label: 'Revenue',
                         data: chartData.revenue,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderColor: '#35C98A',
+                        backgroundColor: 'rgba(53, 201, 138, 0.1)',
                         borderWidth: 2,
                         tension: 0.3,
                         fill: true,
@@ -359,8 +359,8 @@
                     {
                         label: 'Total Expenses',
                         data: chartData.total_expenses,
-                        borderColor: '#f43f5e',
-                        backgroundColor: 'rgba(244, 63, 94, 0.05)',
+                        borderColor: '#F05D63',
+                        backgroundColor: 'rgba(240, 93, 99, 0.05)',
                         borderWidth: 2,
                         tension: 0.3,
                         fill: true,
@@ -368,7 +368,7 @@
                     {
                         label: 'Net Profit',
                         data: chartData.net_profit,
-                        borderColor: '#fbbf24',
+                        borderColor: '#FFD044',
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         borderDash: [4, 4],
@@ -404,19 +404,19 @@
                 scales: {
                     x: {
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.05)'
+                            color: 'rgba(42, 53, 69, 0.5)'
                         },
                         ticks: {
-                            color: '#9ca3af',
+                            color: '#A5AFBF',
                             font: { size: 11 }
                         }
                     },
                     y: {
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.05)'
+                            color: 'rgba(42, 53, 69, 0.5)'
                         },
                         ticks: {
-                            color: '#9ca3af',
+                            color: '#A5AFBF',
                             font: { size: 11 },
                             callback: function(value) {
                                 return 'Rp ' + (value / 1000).toLocaleString('id-ID') + 'k';

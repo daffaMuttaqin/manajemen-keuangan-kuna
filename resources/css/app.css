@@ -7,28 +7,68 @@
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-inter: 'Inter', sans-serif;
 
-    --color-background: #16130e;
-    --color-surface: #16130e;
-    --color-surface-container: #231f1a;
-    --color-surface-container-low: #1e1b16;
-    --color-surface-container-high: #2d2924;
-    --color-surface-container-highest: #38342e;
+    /* Base Surfaces */
+    --color-background: #0B1220;
+    --color-surface: #131C2B;
+    --color-surface-container-low: #131C2B;
+    --color-surface-container: #1C2533;
+    --color-surface-container-high: #242F40;
+    --color-surface-container-highest: #2D3A4F;
 
-    --color-primary: #e9c176;
-    --color-primary-container: #c5a059;
+    --color-card: #1C2533;
+    --color-elevated: #242F40;
+    --color-modal: #242F40;
+    --color-dropdown: #242F40;
 
-    --color-on-primary: #412d00;
-    --color-on-primary-container: #4e3700;
+    /* Primary Accent (Blue) */
+    --color-primary: #3568F6;
+    --color-primary-hover: #4A78FF;
+    --color-primary-container: #4A78FF;
 
-    --color-on-background: #e9e1d8;
-    --color-on-surface: #e9e1d8;
-    --color-on-surface-variant: #d1c5b4;
+    --color-on-primary: #FFFFFF;
+    --color-on-primary-container: #F4F7FB;
 
-    --color-outline: #9a8f80;
-    --color-outline-variant: #4e4639;
+    /* Text Colors */
+    --color-on-background: #F4F7FB;
+    --color-on-surface: #F4F7FB;
+    --color-on-surface-variant: #A5AFBF;
+    --color-text-muted: #717D90;
 
-    --color-error: #ffb4ab;
-    --color-error-container: #93000a;
+    /* Borders */
+    --color-border: #2A3545;
+    --color-outline: #2A3545;
+    --color-outline-variant: #2A3545;
+
+    /* Semantic Financial Colors */
+    --color-income: #35C98A;
+    --color-success: #35C98A;
+    --color-expense: #F05D63;
+    --color-danger: #F05D63;
+    --color-error: #F05D63;
+    --color-error-container: rgba(240, 93, 99, 0.15);
+    --color-warning: #FFD044;
+    --color-info: #55A6FF;
+
+    /* Tailwind Palette Overrides to align with Dark Finance tokens */
+    --color-emerald-400: #35C98A;
+    --color-emerald-500: #35C98A;
+    --color-emerald-600: #2EB37A;
+
+    --color-rose-400: #F05D63;
+    --color-rose-500: #F05D63;
+    --color-rose-600: #F05D63;
+    --color-rose-700: #D9444A;
+
+    --color-amber-400: #FFD044;
+    --color-amber-500: #FFD044;
+    --color-amber-600: #E6B935;
+
+    --color-blue-400: #4A78FF;
+    --color-blue-500: #3568F6;
+    --color-blue-600: #2955D4;
+
+    --color-cyan-400: #55A6FF;
+    --color-cyan-500: #55A6FF;
 
     --radius: 0.125rem;
     --radius-lg: 0.25rem;
