@@ -19,7 +19,7 @@
     <header class="md:hidden bg-surface-container-low border-b border-outline-variant p-4 flex items-center justify-between z-30">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center font-bold text-on-primary-container">
-                K
+                KF
             </div>
             <span class="font-semibold text-primary">Kuna Finance</span>
         </div>
@@ -33,9 +33,16 @@
         <div class="p-5">
             <!-- Brand -->
             <div class="flex items-center gap-3 mb-6 pb-4 border-b border-outline-variant/50">
-                <div class="w-10 h-10 rounded bg-primary-container flex items-center justify-center font-bold text-lg text-on-primary-container shadow-sm">
-                    K
-                </div>
+                <!-- <div class="w-10 h-10 rounded bg-primary-container flex items-center justify-center font-bold text-lg text-on-primary-container shadow-sm">
+                    KF
+                </div> -->
+                <div class="w-10 h-10 rounded flex items-center justify-center overflow-hidden shadow-sm">
+    <img
+        src="{{ asset('images/logo-kuna.jpeg') }}"
+        alt="Kuna Patisserie"
+        class="w-full h-full object-cover"
+    >
+</div>
                 <div>
                     <h1 class="font-bold text-primary text-base leading-tight">Kuna Patisserie</h1>
                     <p class="text-xs text-on-surface-variant">Financial Operations</p>
