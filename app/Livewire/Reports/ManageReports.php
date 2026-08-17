@@ -20,7 +20,7 @@ class ManageReports extends Component
     public string $activeTab = 'summary'; // summary | income | expense | transfers
 
     #[Url(as: 'period')]
-    public string $period = 'all_time';
+    public string $period = 'this_month';
 
     #[Url(as: 'from')]
     public ?string $from = null;

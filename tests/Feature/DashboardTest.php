@@ -173,7 +173,7 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($user)->get('/dashboard?period=custom&from=2026-08-20&to=2026-08-10');
 
         $response->assertStatus(200);
-        $response->assertViewHas('period', 'all_time');
+        $response->assertViewHas('period', 'this_month');
         $response->assertViewHas('dateValidationError');
         $response->assertSee('The &quot;from&quot; date must be earlier than or equal to the &quot;to&quot; date.', false);
     }

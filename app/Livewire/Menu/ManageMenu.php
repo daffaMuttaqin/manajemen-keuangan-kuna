@@ -138,6 +138,12 @@ class ManageMenu extends Component
         });
     }
 
+    public function closeModal()
+    {
+        $this->isModalOpen = false;
+        $this->resetForm();
+    }
+
     public function resetForm()
     {
         $this->editingMenuItemId = null;

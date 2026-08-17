@@ -21,7 +21,7 @@
                     <h3 class="text-lg font-bold text-on-surface">
                         {{ $editingMenuItemId ? 'Edit Menu Item' : 'Create Menu Item' }}
                     </h3>
-                    <button type="button" wire:click="resetForm" class="text-on-surface-variant hover:text-on-surface">
+                    <button type="button" wire:click="closeModal" class="text-on-surface-variant hover:text-on-surface">
                         <span class="material-symbols-outlined text-[20px]">close</span>
                     </button>
                 </div>
@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant/50 mt-6">
-                        <button type="button" wire:click="resetForm" class="px-4 py-2 border border-outline-variant rounded text-sm font-medium text-on-surface-variant hover:bg-surface-container transition">
+                        <button type="button" wire:click="closeModal" class="px-4 py-2 border border-outline-variant rounded text-sm font-medium text-on-surface-variant hover:bg-surface-container transition">
                             Cancel
                         </button>
                         <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded text-sm font-semibold hover:bg-primary-container transition">

@@ -27,7 +27,7 @@ class ReportExportController extends Controller
             abort(404, 'Unsupported export report type.');
         }
 
-        $period = $request->query('period', 'all_time');
+        $period = $request->query('period', 'this_month');
         $from   = $request->query('from');
         $to     = $request->query('to');
 

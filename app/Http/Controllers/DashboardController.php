@@ -26,7 +26,7 @@ class DashboardController extends Controller
         IncomeCalculationService $incomeService,
         ExpenseCalculationService $expenseService
     ): View {
-        $period = $request->query('period', 'all_time');
+        $period = $request->query('period', 'this_month');
         $from   = $request->query('from');
         $to     = $request->query('to');
 
@@ -47,22 +47,26 @@ class DashboardController extends Controller
         } elseif ($period === 'custom') {
             if (!$from || !$to || !Carbon::hasFormat($from, 'Y-m-d') || !Carbon::hasFormat($to, 'Y-m-d')) {
                 $dateValidationError = 'Please provide valid "from" and "to" dates in Y-m-d format.';
-                $period   = 'all_time';
-                $fromDate = null;
-                $toDate   = null;
+                $period   = 'this_month';
+                $fromDate = now()->startOfMonth()->format('Y-m-d');
+                $toDate   = now()->format('Y-m-d');
             } elseif ($from > $to) {
                 $dateValidationError = 'The "from" date must be earlier than or equal to the "to" date.';
-                $period   = 'all_time';
-                $fromDate = null;
-                $toDate   = null;
+                $period   = 'this_month';
+                $fromDate = now()->startOfMonth()->format('Y-m-d');
+                $toDate   = now()->format('Y-m-d');
             } else {
                 $fromDate = $from;
                 $toDate   = $to;
             }
-        } else {
+        } elseif ($period === 'all_time') {
             $period   = 'all_time';
             $fromDate = null;
             $toDate   = null;
+        } else {
+            $period   = 'this_month';
+            $fromDate = now()->startOfMonth()->format('Y-m-d');
+            $toDate   = now()->format('Y-m-d');
         }
 
         // Active accounts & balance metrics
