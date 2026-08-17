@@ -76,8 +76,8 @@
         @endif
     </div>
 
-    <!-- KPI Section (4 Compact Financial Cards) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- KPI Section (5 Compact Financial Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <!-- KPI 1: Active Cash Balance (Real Point-in-Time Data) -->
         <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-3">
@@ -95,7 +95,7 @@
             </p>
         </div>
 
-        <!-- KPI 2: Total Revenue (Period Bounded) -->
+        <!-- KPI 2: Total Revenue (paid + unpaid active income) -->
         <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
@@ -108,11 +108,28 @@
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Active paid income (selected period)
+                All active income (paid &amp; unpaid)
             </p>
         </div>
 
-        <!-- KPI 3: Total Expenses (Period Bounded — Includes Asset Expenses) -->
+        <!-- KPI 3: Unpaid Revenue (active + unpaid — not yet collected) -->
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Unpaid Revenue</span>
+                <div class="w-8 h-8 rounded bg-amber-500/10 flex items-center justify-center text-amber-400">
+                    <span class="material-symbols-outlined text-[20px]">schedule</span>
+                </div>
+            </div>
+            <div class="text-xl font-bold text-amber-400">
+                {{ \App\Support\Format::currency($unpaidRevenue) }}
+            </div>
+            <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                Active income not yet collected
+            </p>
+        </div>
+
+        <!-- KPI 4: Total Expenses (Period Bounded — Includes Asset Expenses) -->
         <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Expenses</span>
@@ -129,7 +146,7 @@
             </p>
         </div>
 
-        <!-- KPI 4: Net Profit (Period Bounded — Excludes Asset Expenses) -->
+        <!-- KPI 5: Net Profit (Period Bounded — Based on Paid Revenue Only) -->
         <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Net Profit</span>
@@ -142,7 +159,7 @@
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full {{ $netProfit >= 0 ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
-                Revenue minus Profit-Eligible Expenses
+                Paid revenue minus Profit-Eligible Expenses
             </p>
         </div>
     </div>

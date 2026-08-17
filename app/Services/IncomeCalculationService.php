@@ -374,7 +374,9 @@ class IncomeCalculationService
      * Revenue = SUM(total_amount) WHERE record_status='active' AND payment_status='paid'
      * Filtered by optional date range.
      *
-     * Used by dashboard and future reporting modules.
+     * Used by dashboard Net Profit calculation and reporting modules.
+     * NOTE: This method is intentionally paid-only so Net Profit remains unaffected
+     * by unpaid income. Do NOT change this method's semantics.
      *
      * @param string|null $from  Y-m-d
      * @param string|null $to    Y-m-d
@@ -384,6 +386,67 @@ class IncomeCalculationService
     {
         $query = IncomeTransaction::where('record_status', 'active')
                                   ->where('payment_status', 'paid');
+
+        if ($from !== null) {
+            $query->where('transaction_date', '>=', $from);
+        }
+
+        if ($to !== null) {
+            $query->where('transaction_date', '<=', $to);
+        }
+
+        return (string) ($query->sum('total_amount') ?? '0');
+    }
+
+    /**
+     * Calculate total omset (gross sales revenue) including both paid and unpaid active income.
+     *
+     * Total Omset = SUM(total_amount) WHERE record_status='active'
+     *              (payment_status = 'paid' OR payment_status = 'unpaid')
+     * Cancelled income is excluded.
+     *
+     * Used for the Dashboard "Total Revenue" KPI card to reflect all recognized
+     * active sales regardless of collection status.
+     *
+     * IMPORTANT: This value must NOT be used in Net Profit or Account Balance calculations.
+     * Those remain anchored to calculateRevenue() (paid-only).
+     *
+     * @param string|null $from  Y-m-d
+     * @param string|null $to    Y-m-d
+     * @return string  Decimal string to preserve precision.
+     */
+    public function calculateTotalOmset(?string $from = null, ?string $to = null): string
+    {
+        $query = IncomeTransaction::where('record_status', 'active');
+
+        if ($from !== null) {
+            $query->where('transaction_date', '>=', $from);
+        }
+
+        if ($to !== null) {
+            $query->where('transaction_date', '<=', $to);
+        }
+
+        return (string) ($query->sum('total_amount') ?? '0');
+    }
+
+    /**
+     * Calculate the unpaid portion of active revenue (outstanding receivables, period-bounded).
+     *
+     * Unpaid Revenue = SUM(total_amount) WHERE record_status='active' AND payment_status='unpaid'
+     * Filtered by optional date range.
+     *
+     * Represents money earned but not yet collected within the selected period.
+     * Does NOT affect account balance or Net Profit.
+     *
+     * @param string|null $from  Y-m-d
+     * @param string|null $to    Y-m-d
+     * @return string  Decimal string to preserve precision.
+     */
+    public function calculateUnpaidRevenue(?string $from = null, ?string $to = null): string
+    {
+        $query = IncomeTransaction::where('record_status', 'active')
+                                  ->where('payment_status', 'unpaid');
 
         if ($from !== null) {
             $query->where('transaction_date', '>=', $from);

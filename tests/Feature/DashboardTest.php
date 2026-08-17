@@ -304,9 +304,251 @@ class DashboardTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewHas('totalRevenue', 0.0);
+        $response->assertViewHas('unpaidRevenue', 0.0);
         $response->assertViewHas('totalExpenses', 0.0);
         $response->assertViewHas('netProfit', 0.0);
         $response->assertSee('No transactions recorded for this period');
     }
-}
 
+    // -------------------------------------------------------------------------
+    // Focused tests for Dashboard Revenue & Unpaid Revenue revision
+    // -------------------------------------------------------------------------
+
+    /**
+     * Requirement 1: Paid active income is included in Total Revenue (totalRevenue).
+     */
+    public function test_dashboard_total_revenue_includes_paid_active_income(): void
+    {
+        $user    = User::factory()->create();
+        $account = Account::create(['name' => 'Cash', 'account_type' => 'cash', 'opening_balance' => 0, 'is_active' => true]);
+        $item    = MenuItem::create(['name' => 'Tart', 'category' => 'Pastry', 'current_price' => 150000, 'is_active' => true]);
+
+        app(\App\Services\IncomeCalculationService::class)->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '2',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => $account->id,
+            'payment_status'      => 'paid',
+        ], $user);
+
+        $response = $this->actingAs($user)->get('/dashboard?period=all_time');
+
+        $response->assertStatus(200);
+        // 2 × 150,000 = 300,000 — paid income contributes to totalRevenue
+        $response->assertViewHas('totalRevenue', 300000.0);
+    }
+
+    /**
+     * Requirement 2: Unpaid active income is included in Total Revenue (totalRevenue).
+     */
+    public function test_dashboard_total_revenue_includes_unpaid_active_income(): void
+    {
+        $user = User::factory()->create();
+        $item = MenuItem::create(['name' => 'Scone', 'category' => 'Pastry', 'current_price' => 50000, 'is_active' => true]);
+
+        // Unpaid income — no account required
+        app(\App\Services\IncomeCalculationService::class)->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '1',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => null,
+            'payment_status'      => 'unpaid',
+        ], $user);
+
+        $response = $this->actingAs($user)->get('/dashboard?period=all_time');
+
+        $response->assertStatus(200);
+        // Unpaid income = 50,000 should appear in totalRevenue
+        $response->assertViewHas('totalRevenue', 50000.0);
+    }
+
+    /**
+     * Requirement 3: Cancelled income is excluded from Total Revenue.
+     */
+    public function test_dashboard_total_revenue_excludes_cancelled_income(): void
+    {
+        $user    = User::factory()->create();
+        $account = Account::create(['name' => 'Bank', 'account_type' => 'bank', 'opening_balance' => 0, 'is_active' => true]);
+        $item    = MenuItem::create(['name' => 'Muffin', 'category' => 'Pastry', 'current_price' => 80000, 'is_active' => true]);
+
+        $incomeService = app(\App\Services\IncomeCalculationService::class);
+
+        // Create and immediately cancel a paid income
+        $cancelled = $incomeService->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '3',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => $account->id,
+            'payment_status'      => 'paid',
+        ], $user);
+        $incomeService->cancelIncomeTransaction($cancelled);
+
+        $response = $this->actingAs($user)->get('/dashboard?period=all_time');
+
+        $response->assertStatus(200);
+        // Cancelled income must not contribute to totalRevenue
+        $response->assertViewHas('totalRevenue', 0.0);
+    }
+
+    /**
+     * Requirement 4: Unpaid Revenue card contains only active + unpaid income.
+     */
+    public function test_dashboard_unpaid_revenue_contains_only_active_unpaid_income(): void
+    {
+        $user    = User::factory()->create();
+        $account = Account::create(['name' => 'Bank', 'account_type' => 'bank', 'opening_balance' => 0, 'is_active' => true]);
+        $item    = MenuItem::create(['name' => 'Brownie', 'category' => 'Pastry', 'current_price' => 60000, 'is_active' => true]);
+
+        $incomeService = app(\App\Services\IncomeCalculationService::class);
+
+        // Paid income — should NOT appear in unpaidRevenue
+        $incomeService->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '2',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => $account->id,
+            'payment_status'      => 'paid',
+        ], $user);
+
+        // Unpaid income — should appear in unpaidRevenue
+        $incomeService->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '1',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => null,
+            'payment_status'      => 'unpaid',
+        ], $user);
+
+        // Cancelled unpaid income — should NOT appear in unpaidRevenue
+        $cancelledUnpaid = $incomeService->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '5',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => null,
+            'payment_status'      => 'unpaid',
+        ], $user);
+        $incomeService->cancelIncomeTransaction($cancelledUnpaid);
+
+        $response = $this->actingAs($user)->get('/dashboard?period=all_time');
+
+        $response->assertStatus(200);
+        // totalRevenue = paid (120,000) + unpaid (60,000) = 180,000
+        $response->assertViewHas('totalRevenue', 180000.0);
+        // unpaidRevenue = only active unpaid = 60,000
+        $response->assertViewHas('unpaidRevenue', 60000.0);
+        // UI shows the Unpaid Revenue card
+        $response->assertSee('Unpaid Revenue');
+    }
+
+    /**
+     * Requirement 5: Period/date filtering applies correctly to both metrics.
+     */
+    public function test_dashboard_revenue_metrics_respect_period_filter(): void
+    {
+        $user    = User::factory()->create();
+        $account = Account::create(['name' => 'Bank', 'account_type' => 'bank', 'opening_balance' => 0, 'is_active' => true]);
+        $item    = MenuItem::create(['name' => 'Pie', 'category' => 'Pastry', 'current_price' => 100000, 'is_active' => true]);
+
+        $incomeService = app(\App\Services\IncomeCalculationService::class);
+
+        // Paid income — this month
+        $incomeService->createIncomeTransaction([
+            'transaction_date'    => '2026-08-10',
+            'menu_item_id'        => $item->id,
+            'quantity'            => '2',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => $account->id,
+            'payment_status'      => 'paid',
+        ], $user);
+
+        // Unpaid income — this month
+        $incomeService->createIncomeTransaction([
+            'transaction_date'    => '2026-08-12',
+            'menu_item_id'        => $item->id,
+            'quantity'            => '1',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => null,
+            'payment_status'      => 'unpaid',
+        ], $user);
+
+        // Paid income — outside the query window (July)
+        $incomeService->createIncomeTransaction([
+            'transaction_date'    => '2026-07-01',
+            'menu_item_id'        => $item->id,
+            'quantity'            => '10',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => $account->id,
+            'payment_status'      => 'paid',
+        ], $user);
+
+        // Custom filter: August only
+        $response = $this->actingAs($user)->get('/dashboard?period=custom&from=2026-08-01&to=2026-08-31');
+
+        $response->assertStatus(200);
+        // totalRevenue Aug: paid(200,000) + unpaid(100,000) = 300,000
+        $response->assertViewHas('totalRevenue', 300000.0);
+        // unpaidRevenue Aug: 100,000
+        $response->assertViewHas('unpaidRevenue', 100000.0);
+        // netProfit is based on paid-only revenue; no expenses = 200,000
+        $response->assertViewHas('netProfit', 200000.0);
+    }
+
+    /**
+     * Requirement 6: Unpaid income does NOT affect Account Balance or Net Profit.
+     */
+    public function test_unpaid_income_does_not_affect_account_balance_or_net_profit(): void
+    {
+        $user    = User::factory()->create();
+        $account = Account::create([
+            'name'            => 'Main Bank',
+            'account_type'    => 'bank',
+            'opening_balance' => 1000000,
+            'is_active'       => true,
+        ]);
+        $item = MenuItem::create(['name' => 'Waffle', 'category' => 'Pastry', 'current_price' => 200000, 'is_active' => true]);
+
+        $incomeService  = app(\App\Services\IncomeCalculationService::class);
+        $balanceService = app(\App\Services\AccountBalanceService::class);
+
+        // Create unpaid income (should NOT credit the account balance)
+        $incomeService->createIncomeTransaction([
+            'transaction_date'    => now()->format('Y-m-d'),
+            'menu_item_id'        => $item->id,
+            'quantity'            => '3',
+            'discount_percentage' => '0',
+            'category'            => 'Pastry',
+            'account_id'          => null,
+            'payment_status'      => 'unpaid',
+        ], $user);
+
+        $response = $this->actingAs($user)->get('/dashboard?period=all_time');
+        $response->assertStatus(200);
+
+        // Account balance unchanged — only the opening balance
+        $this->assertEquals(1000000.0, (float) $balanceService->calculateBalance($account));
+
+        // totalRevenue includes unpaid: 600,000
+        $response->assertViewHas('totalRevenue', 600000.0);
+
+        // Net Profit is based on PAID revenue only: 0 (no paid income) - 0 expenses = 0
+        $response->assertViewHas('netProfit', 0.0);
+
+        // unpaidRevenue = 600,000
+        $response->assertViewHas('unpaidRevenue', 600000.0);
+    }
+}

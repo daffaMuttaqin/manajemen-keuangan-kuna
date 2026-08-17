@@ -75,12 +75,17 @@ class DashboardController extends Controller
         $activeMenuItemsCount = MenuItem::where('is_active', true)->count();
 
         // Bounded financial metrics for selected period
-        $totalRevenue      = (float) $incomeService->calculateRevenue($fromDate, $toDate);
+        // totalRevenue = all active income (paid + unpaid) — presentation metric only
+        $totalRevenue      = (float) $incomeService->calculateTotalOmset($fromDate, $toDate);
+        // unpaidRevenue = active + unpaid portion — not yet collected
+        $unpaidRevenue     = (float) $incomeService->calculateUnpaidRevenue($fromDate, $toDate);
         $totalExpenses     = (float) $expenseService->calculateTotalExpenses($fromDate, $toDate);
         $profitEligibleExp = (float) $expenseService->calculateProfitEligibleExpenses($fromDate, $toDate);
 
-        // Net Profit = Revenue - Profit-Eligible Expenses (Asset expenses are excluded)
-        $netProfit = $totalRevenue - $profitEligibleExp;
+        // Net Profit = Paid Revenue - Profit-Eligible Expenses (Asset expenses excluded)
+        // Uses calculateRevenue() (paid-only) — unpaid income does NOT affect Net Profit
+        $paidRevenue = (float) $incomeService->calculateRevenue($fromDate, $toDate);
+        $netProfit   = $paidRevenue - $profitEligibleExp;
 
         // Recent Transactions Feed (top 10 across Income, Expense, Transfer)
         $recentTransactions = $this->getRecentTransactions($fromDate, $toDate);
@@ -94,6 +99,7 @@ class DashboardController extends Controller
             'activeMenuItemsCount' => $activeMenuItemsCount,
             'balanceService'       => $balanceService,
             'totalRevenue'         => $totalRevenue,
+            'unpaidRevenue'        => $unpaidRevenue,
             'totalExpenses'        => $totalExpenses,
             'profitEligibleExp'    => $profitEligibleExp,
             'netProfit'            => $netProfit,
