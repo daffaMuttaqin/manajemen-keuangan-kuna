@@ -128,8 +128,14 @@ class IncomeCalculationService
         }
 
         // ------------------------------------------------------------------
-        // 5. Validate account rules for paid income. (INV-020)
+        // 5. Validate sales channel & account rules for paid income. (INV-020)
         // ------------------------------------------------------------------
+        $allowedChannels = ['Cafe', 'Online', 'Reseller', 'Other'];
+        $salesChannel    = $data['sales_channel'] ?? 'Other';
+        if (! in_array($salesChannel, $allowedChannels, true)) {
+            throw new InvalidArgumentException('Invalid sales channel provided.');
+        }
+
         $paymentStatus = $data['payment_status'];
 
         if ($paymentStatus === 'paid') {
@@ -165,6 +171,7 @@ class IncomeCalculationService
         return DB::transaction(function () use (
             $transactionId,
             $data,
+            $salesChannel,
             $unitPriceStr,
             $subtotalStr,
             $discountStr,
@@ -186,6 +193,7 @@ class IncomeCalculationService
                 'discount_amount'     => $discountStr,
                 'total_amount'        => $totalAmountStr,
                 'category'            => $data['category'],
+                'sales_channel'       => $salesChannel,
                 'description'         => $data['description'] ?? null,
                 'account_id'          => $data['account_id'] ?? null,
                 'payment_status'      => $paymentStatus,
@@ -203,6 +211,7 @@ class IncomeCalculationService
                     'account_id'       => $income->account_id,
                     'payment_status'   => $income->payment_status,
                     'record_status'    => $income->record_status,
+                    'sales_channel'    => $income->sales_channel,
                 ],
             ], $creator);
 
@@ -230,6 +239,12 @@ class IncomeCalculationService
 
             if ($income->isCancelled()) {
                 throw new InvalidArgumentException('Cannot edit a cancelled income transaction.');
+            }
+
+            $allowedChannels = ['Cafe', 'Online', 'Reseller', 'Other'];
+            $salesChannel    = $data['sales_channel'] ?? $income->sales_channel ?? 'Other';
+            if (! in_array($salesChannel, $allowedChannels, true)) {
+                throw new InvalidArgumentException('Invalid sales channel provided.');
             }
 
             $oldPaymentStatus = $income->payment_status;
@@ -290,6 +305,7 @@ class IncomeCalculationService
                 'total_amount'   => (string) $income->total_amount,
                 'account_id'     => $income->account_id,
                 'payment_status' => $income->payment_status,
+                'sales_channel'  => $income->sales_channel,
             ];
 
             $income->update([
@@ -302,6 +318,7 @@ class IncomeCalculationService
                 'discount_amount'     => $discountStr,
                 'total_amount'        => $totalAmountStr,
                 'category'            => $data['category'],
+                'sales_channel'       => $salesChannel,
                 'description'         => $data['description'] ?? null,
                 'account_id'          => $data['account_id'] ?? null,
                 'payment_status'      => $newPaymentStatus,
@@ -313,6 +330,7 @@ class IncomeCalculationService
                 'total_amount'   => (string) $income->total_amount,
                 'account_id'     => $income->account_id,
                 'payment_status' => $income->payment_status,
+                'sales_channel'  => $income->sales_channel,
             ];
 
             app(AuditLogService::class)->record('income_updated', $income, [
@@ -472,5 +490,44 @@ class IncomeCalculationService
         return (string) (IncomeTransaction::where('record_status', 'active')
                                           ->where('payment_status', 'unpaid')
                                           ->sum('total_amount') ?? '0');
+    }
+
+    /**
+     * Calculate total revenue (omset) grouped by sales channel for active income transactions.
+     *
+     * Total revenue per channel = SUM(total_amount) WHERE record_status='active' AND sales_channel = $channel
+     * Includes both paid and unpaid active income (matching calculateTotalOmset semantics).
+     * Cancelled income is excluded.
+     *
+     * @param string|null $from  Y-m-d
+     * @param string|null $to    Y-m-d
+     * @return array<string, float> Keyed by channel name: ['Cafe' => 0.0, 'Online' => 0.0, 'Reseller' => 0.0, 'Other' => 0.0]
+     */
+    public function calculateRevenueBySalesChannel(?string $from = null, ?string $to = null): array
+    {
+        $channels = ['Cafe', 'Online', 'Reseller', 'Other'];
+        $result   = array_fill_keys($channels, 0.0);
+
+        $query = IncomeTransaction::where('record_status', 'active');
+
+        if ($from !== null) {
+            $query->where('transaction_date', '>=', $from);
+        }
+
+        if ($to !== null) {
+            $query->where('transaction_date', '<=', $to);
+        }
+
+        $sums = $query->select('sales_channel', DB::raw('SUM(total_amount) as total'))
+                     ->groupBy('sales_channel')
+                     ->pluck('total', 'sales_channel');
+
+        foreach ($sums as $channel => $total) {
+            if (array_key_exists($channel, $result)) {
+                $result[$channel] = (float) $total;
+            }
+        }
+
+        return $result;
     }
 }

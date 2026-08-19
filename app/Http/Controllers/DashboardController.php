@@ -93,6 +93,9 @@ class DashboardController extends Controller
         // Financial Trend Chart Data
         $chartData = $this->getChartData($fromDate, $toDate);
 
+        // Sales by Channel Doughnut Chart Data
+        $salesChannelData = $incomeService->calculateRevenueBySalesChannel($fromDate, $toDate);
+
         return view('dashboard', [
             'accounts'             => $accounts,
             'totalBalance'         => $totalBalance,
@@ -109,6 +112,7 @@ class DashboardController extends Controller
             'dateValidationError'  => $dateValidationError,
             'recentTransactions'   => $recentTransactions,
             'chartData'            => $chartData,
+            'salesChannelData'     => $salesChannelData,
         ]);
     }
 

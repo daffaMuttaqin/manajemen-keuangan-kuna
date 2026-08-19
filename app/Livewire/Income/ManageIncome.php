@@ -25,6 +25,7 @@ class ManageIncome extends Component
     public string $quantity = '';
     public string $discount_percentage = '0';
     public string $category = '';
+    public string $sales_channel = 'Cafe';
     public string $description = '';
     public string $account_id = '';
     public string $payment_status = 'unpaid';
@@ -75,6 +76,7 @@ class ManageIncome extends Component
             'quantity'            => 'required|numeric|min:0.01',
             'discount_percentage' => 'required|numeric|min:0|max:100',
             'category'            => 'required|string|max:30',
+            'sales_channel'       => ['required', Rule::in(['Cafe', 'Online', 'Reseller', 'Other'])],
             'description'         => 'nullable|string|max:5000',
             'account_id'          => [
                 Rule::requiredIf($this->payment_status === 'paid'),
@@ -149,6 +151,7 @@ class ManageIncome extends Component
         $this->quantity            = (string) $income->quantity;
         $this->discount_percentage = (string) $income->discount_percentage;
         $this->category            = $income->category;
+        $this->sales_channel       = $income->sales_channel ?? 'Cafe';
         $this->description         = $income->description ?? '';
         $this->account_id          = $income->account_id ? (string) $income->account_id : '';
         $this->payment_status      = $income->payment_status;
@@ -189,6 +192,7 @@ class ManageIncome extends Component
                     'quantity'            => $this->quantity,
                     'discount_percentage' => $this->discount_percentage,
                     'category'            => $this->category,
+                    'sales_channel'       => $this->sales_channel,
                     'description'         => $this->description ?: null,
                     'account_id'          => $this->account_id ?: null,
                     'payment_status'      => $this->payment_status,
@@ -201,6 +205,7 @@ class ManageIncome extends Component
                     'quantity'            => $this->quantity,
                     'discount_percentage' => $this->discount_percentage,
                     'category'            => $this->category,
+                    'sales_channel'       => $this->sales_channel,
                     'description'         => $this->description ?: null,
                     'account_id'          => $this->account_id ?: null,
                     'payment_status'      => $this->payment_status,
@@ -319,6 +324,7 @@ class ManageIncome extends Component
         $this->quantity            = '';
         $this->discount_percentage = '0';
         $this->category            = '';
+        $this->sales_channel       = 'Cafe';
         $this->description         = '';
         $this->account_id          = '';
         $this->payment_status      = 'unpaid';
@@ -345,12 +351,13 @@ class ManageIncome extends Component
             $query->where('transaction_date', '<=', $toDate);
         }
 
-        // Search: match against transaction_id prefix, menu item name, category, description.
+        // Search: match against transaction_id prefix, menu item name, category, sales channel, description.
         if ($this->search !== '') {
             $search = $this->search;
             $query->where(function ($q) use ($search) {
                 $q->where('transaction_id', 'like', $search . '%')
                   ->orWhere('category', 'like', '%' . $search . '%')
+                  ->orWhere('sales_channel', 'like', '%' . $search . '%')
                   ->orWhere('description', 'like', '%' . $search . '%')
                   ->orWhereHas('menuItem', fn ($mq) => $mq->where('name', 'like', '%' . $search . '%'));
             });

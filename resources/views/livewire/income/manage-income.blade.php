@@ -173,20 +173,38 @@
                             </div>
                         </div>
 
-                        {{-- Category --}}
-                        <div>
-                            <label for="category" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-                                Category <span class="text-error">*</span>
-                            </label>
-                            <input type="text"
-                                   id="category"
-                                   wire:model="category"
-                                   maxlength="30"
-                                   placeholder="e.g. Cake Sales, Pastry, Beverage"
-                                   class="w-full h-10 bg-background border @error('category') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                            @error('category')
-                                <p class="text-xs text-error mt-1">{{ $message }}</p>
-                            @enderror
+                        {{-- Row: Category + Sales Channel --}}
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="category" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+                                    Category <span class="text-error">*</span>
+                                </label>
+                                <input type="text"
+                                       id="category"
+                                       wire:model="category"
+                                       maxlength="30"
+                                       placeholder="e.g. Cake Sales, Pastry"
+                                       class="w-full h-10 bg-background border @error('category') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                @error('category')
+                                    <p class="text-xs text-error mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="sales_channel" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+                                    Sales Channel <span class="text-error">*</span>
+                                </label>
+                                <select id="sales_channel"
+                                        wire:model="sales_channel"
+                                        class="w-full h-10 bg-background border @error('sales_channel') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                    <option value="Cafe">Cafe</option>
+                                    <option value="Online">Online</option>
+                                    <option value="Reseller">Reseller</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                @error('sales_channel')
+                                    <p class="text-xs text-error mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- Account (required for paid, optional for unpaid) --}}
@@ -417,7 +435,12 @@
                             {{-- Item + Category --}}
                             <td class="py-3.5 px-4">
                                 <p class="text-sm font-semibold text-on-surface">{{ $tx->menuItem?->name ?? '—' }}</p>
-                                <p class="text-xs text-on-surface-variant">{{ $tx->category }}</p>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="text-xs text-on-surface-variant">{{ $tx->category }}</span>
+                                    <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-primary-container/20 text-primary border border-primary/30">
+                                        {{ $tx->sales_channel }}
+                                    </span>
+                                </div>
                                 @if($tx->description)
                                     <p class="text-xs text-on-surface-variant/60 mt-0.5 truncate max-w-[180px]">{{ $tx->description }}</p>
                                 @endif

@@ -164,9 +164,9 @@
         </div>
     </div>
 
-    <!-- Main Section: Cash Position & Financial Trend Chart Container -->
+    <!-- Main Section: Financial Performance Trend & Sales Mix Container -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left 2 Cols: Cash Trend / Financial Chart Container -->
+        <!-- Left 2 Cols: Financial Performance Trend Line Chart -->
         <div class="lg:col-span-2 bg-surface-container-low border border-outline-variant rounded-lg p-6">
             <div class="flex items-center justify-between mb-6">
                 <div>
@@ -192,6 +192,171 @@
             <!-- Chart Canvas -->
             <div class="h-64 relative">
                 <canvas id="financialTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Right 1 Col: Sales Mix by Channel Doughnut Chart -->
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-base font-semibold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-primary">pie_chart</span>
+                            Sales by Channel
+                        </h3>
+                        <p class="text-xs text-on-surface-variant mt-0.5">Revenue contribution by channel</p>
+                    </div>
+                    <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-primary-container/20 text-primary border border-primary/30">
+                        {{ \App\Support\Format::currency($totalRevenue) }}
+                    </span>
+                </div>
+
+                <!-- Doughnut Chart Canvas -->
+                <div class="h-44 relative my-2">
+                    <canvas id="salesChannelChart"></canvas>
+                </div>
+
+                <!-- Channel Revenue Breakdown Legend -->
+                @php
+                    $channelColors = [
+                        'Cafe'     => 'bg-emerald-400',
+                        'Online'   => 'bg-blue-400',
+                        'Reseller' => 'bg-amber-400',
+                        'Other'    => 'bg-purple-400',
+                    ];
+                @endphp
+                <div class="space-y-2 mt-4 pt-3 border-t border-outline-variant/50 text-xs">
+                    @foreach(['Cafe', 'Online', 'Reseller', 'Other'] as $channelName)
+                        @php
+                            $channelAmt = $salesChannelData[$channelName] ?? 0.0;
+                            $pct = $totalRevenue > 0 ? round(($channelAmt / $totalRevenue) * 100, 1) : 0.0;
+                        @endphp
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full {{ $channelColors[$channelName] }}"></span>
+                                <span class="font-medium text-on-surface">{{ $channelName }}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="font-mono text-on-surface-variant">{{ \App\Support\Format::currency($channelAmt) }}</span>
+                                <span class="font-mono font-semibold text-primary w-11 text-right">{{ number_format($pct, 1) }}%</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Section: Recent Transactions & Accounts Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left 2 Cols: Recent Transactions -->
+        <div class="lg:col-span-2 bg-surface-container-low border border-outline-variant rounded-lg p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-base font-semibold text-on-surface">Recent Transactions</h3>
+                    <p class="text-xs text-on-surface-variant mt-0.5">Latest financial entries and fund transfers</p>
+                </div>
+                <span class="text-xs px-2.5 py-1 bg-surface-container border border-outline-variant rounded text-on-surface-variant">
+                    Top {{ count($recentTransactions) }} Latest Entries
+                </span>
+            </div>
+
+            <div class="border border-outline-variant/60 rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-surface-container border-b border-outline-variant/60">
+                            <tr>
+                                <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Description</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Category</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Type</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Amount</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Account</th>
+                                <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/40 bg-surface-container-low">
+                            @forelse($recentTransactions as $tx)
+                                <tr class="hover:bg-surface-container/50 transition {{ $tx['is_cancelled'] ? 'opacity-50' : '' }}">
+                                    {{-- Date --}}
+                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                        <p class="text-xs font-medium text-on-surface">{{ $tx['date']->format('d M Y') }}</p>
+                                    </td>
+
+                                    {{-- Title --}}
+                                    <td class="py-3.5 px-4">
+                                        <p class="text-xs font-semibold text-on-surface">{{ $tx['title'] }}</p>
+                                    </td>
+
+                                    {{-- Category --}}
+                                    <td class="py-3.5 px-4">
+                                        <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container-high text-on-surface border border-outline-variant/40">
+                                            {{ $tx['category'] }}
+                                        </span>
+                                    </td>
+
+                                    {{-- Type --}}
+                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                        @if($tx['type'] === 'Income')
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                                Income
+                                            </span>
+                                        @elseif($tx['type'] === 'Expense')
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                                                Expense
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-primary-container/20 text-primary border border-primary/30">
+                                                Transfer
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Amount --}}
+                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                        <p class="text-xs font-bold font-mono {{ $tx['type'] === 'Income' ? 'text-emerald-400' : ($tx['type'] === 'Expense' ? 'text-rose-400' : 'text-primary') }}">
+                                            {{ \App\Support\Format::currency($tx['amount']) }}
+                                        </p>
+                                    </td>
+
+                                    {{-- Account --}}
+                                    <td class="py-3.5 px-4 whitespace-nowrap">
+                                        <p class="text-xs text-on-surface-variant">{{ $tx['account_name'] }}</p>
+                                    </td>
+
+                                    {{-- Status --}}
+                                    <td class="py-3.5 px-4 whitespace-nowrap text-right">
+                                        @if($tx['status_display'] === 'Paid' || $tx['status_display'] === 'Completed')
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                                {{ $tx['status_display'] }}
+                                            </span>
+                                        @elseif($tx['status_display'] === 'Unpaid')
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                                Unpaid
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant/60">
+                                                Cancelled
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                                        <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
+                                            <span class="material-symbols-outlined text-[36px] text-on-surface-variant/40 mb-2">receipt_long</span>
+                                            <p class="text-sm font-medium text-on-surface">No transactions recorded for this period</p>
+                                            <p class="text-xs text-on-surface-variant/70 mt-1">
+                                                Transactions created within the selected date range will appear here automatically.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -236,117 +401,6 @@
                     <span>Active Menu Items: <strong class="text-on-surface font-semibold">{{ $activeMenuItemsCount }}</strong></span>
                 </div>
                 <a href="{{ route('menu.index') }}" class="text-xs text-primary hover:underline font-medium">Manage Menu &rarr;</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Transactions Section -->
-    <div class="bg-surface-container-low border border-outline-variant rounded-lg p-6">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h3 class="text-base font-semibold text-on-surface">Recent Transactions</h3>
-                <p class="text-xs text-on-surface-variant mt-0.5">Latest financial entries and fund transfers</p>
-            </div>
-            <span class="text-xs px-2.5 py-1 bg-surface-container border border-outline-variant rounded text-on-surface-variant">
-                Top {{ count($recentTransactions) }} Latest Entries
-            </span>
-        </div>
-
-        <div class="border border-outline-variant/60 rounded-lg overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-surface-container border-b border-outline-variant/60">
-                        <tr>
-                            <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
-                            <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Description</th>
-                            <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Category</th>
-                            <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Type</th>
-                            <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Amount</th>
-                            <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Account</th>
-                            <th class="py-3 px-4 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-outline-variant/40 bg-surface-container-low">
-                        @forelse($recentTransactions as $tx)
-                            <tr class="hover:bg-surface-container/50 transition {{ $tx['is_cancelled'] ? 'opacity-50' : '' }}">
-                                {{-- Date --}}
-                                <td class="py-3.5 px-4 whitespace-nowrap">
-                                    <p class="text-xs font-medium text-on-surface">{{ $tx['date']->format('d M Y') }}</p>
-                                </td>
-
-                                {{-- Title --}}
-                                <td class="py-3.5 px-4">
-                                    <p class="text-xs font-semibold text-on-surface">{{ $tx['title'] }}</p>
-                                </td>
-
-                                {{-- Category --}}
-                                <td class="py-3.5 px-4">
-                                    <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container-high text-on-surface border border-outline-variant/40">
-                                        {{ $tx['category'] }}
-                                    </span>
-                                </td>
-
-                                {{-- Type --}}
-                                <td class="py-3.5 px-4 whitespace-nowrap">
-                                    @if($tx['type'] === 'Income')
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                                            Income
-                                        </span>
-                                    @elseif($tx['type'] === 'Expense')
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">
-                                            Expense
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-primary-container/20 text-primary border border-primary/30">
-                                            Transfer
-                                        </span>
-                                    @endif
-                                </td>
-
-                                {{-- Amount --}}
-                                <td class="py-3.5 px-4 whitespace-nowrap">
-                                    <p class="text-xs font-bold font-mono {{ $tx['type'] === 'Income' ? 'text-emerald-400' : ($tx['type'] === 'Expense' ? 'text-rose-400' : 'text-primary') }}">
-                                        {{ \App\Support\Format::currency($tx['amount']) }}
-                                    </p>
-                                </td>
-
-                                {{-- Account --}}
-                                <td class="py-3.5 px-4 whitespace-nowrap">
-                                    <p class="text-xs text-on-surface-variant">{{ $tx['account_name'] }}</p>
-                                </td>
-
-                                {{-- Status --}}
-                                <td class="py-3.5 px-4 whitespace-nowrap text-right">
-                                    @if($tx['status_display'] === 'Paid' || $tx['status_display'] === 'Completed')
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                                            {{ $tx['status_display'] }}
-                                        </span>
-                                    @elseif($tx['status_display'] === 'Unpaid')
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                                            Unpaid
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant/60">
-                                            Cancelled
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="py-12 text-center text-on-surface-variant">
-                                    <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
-                                        <span class="material-symbols-outlined text-[36px] text-on-surface-variant/40 mb-2">receipt_long</span>
-                                        <p class="text-sm font-medium text-on-surface">No transactions recorded for this period</p>
-                                        <p class="text-xs text-on-surface-variant/70 mt-1">
-                                            Transactions created within the selected date range will appear here automatically.
-                                        </p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -437,6 +491,50 @@
                             font: { size: 11 },
                             callback: function(value) {
                                 return 'Rp ' + (value / 1000).toLocaleString('id-ID') + 'k';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Sales Channel Doughnut Chart
+        const salesCtx = document.getElementById('salesChannelChart').getContext('2d');
+        const salesChannelData = @json($salesChannelData);
+        const channelLabels = ['Cafe', 'Online', 'Reseller', 'Other'];
+        const channelValues = channelLabels.map(channel => salesChannelData[channel] || 0);
+
+        new Chart(salesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: channelLabels,
+                datasets: [{
+                    data: channelValues,
+                    backgroundColor: ['#34D399', '#60A5FA', '#FBBF24', '#C084FC'],
+                    borderColor: '#1E293B',
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(context.parsed);
+                                }
+                                return label;
                             }
                         }
                     }

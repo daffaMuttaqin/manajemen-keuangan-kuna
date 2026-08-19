@@ -21,6 +21,7 @@ class IncomeTransaction extends Model
         'discount_amount',
         'total_amount',
         'category',
+        'sales_channel',
         'description',
         'account_id',
         'payment_status',
