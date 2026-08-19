@@ -418,7 +418,7 @@ class AuditLogTest extends TestCase
             ->set('user_id', (string) $user1->id)
             ->set('actionFilter', 'income_created')
             ->assertViewHas('auditLogs', function ($logs) {
-                return $logs->total() === 10 && $logs->perPage() === 15;
+                return $logs->total() === 10 && $logs->perPage() === 8;
             });
     }
 

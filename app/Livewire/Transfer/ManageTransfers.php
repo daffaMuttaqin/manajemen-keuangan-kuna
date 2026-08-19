@@ -159,6 +159,16 @@ class ManageTransfers extends Component
         $this->cancellingTransferId = null;
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedRecordFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = Transfer::with(['fromAccount', 'toAccount', 'creator']);
@@ -178,7 +188,7 @@ class ManageTransfers extends Component
 
         $transfers = $query->orderBy('transfer_date', 'desc')
                            ->orderBy('id', 'desc')
-                           ->paginate(10);
+                           ->paginate(8);
 
         $accounts = Account::where('is_active', true)->orderBy('name')->get();
 

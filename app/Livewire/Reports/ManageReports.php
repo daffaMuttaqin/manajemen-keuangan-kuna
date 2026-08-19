@@ -162,11 +162,11 @@ class ManageReports extends Component
         if ($this->activeTab === 'summary') {
             $summaryData = $reportService->getFinancialSummary($fromDate, $toDate);
         } elseif ($this->activeTab === 'income') {
-            $incomeData = $reportService->getIncomeQuery($filters)->paginate(15);
+            $incomeData = $reportService->getIncomeQuery($filters)->paginate(8);
         } elseif ($this->activeTab === 'expense') {
-            $expenseData = $reportService->getExpenseQuery($filters)->paginate(15);
+            $expenseData = $reportService->getExpenseQuery($filters)->paginate(8);
         } elseif ($this->activeTab === 'transfers') {
-            $transferData = $reportService->getTransferQuery($filters)->paginate(15);
+            $transferData = $reportService->getTransferQuery($filters)->paginate(8);
         }
 
         return view('livewire.reports.manage-reports', [

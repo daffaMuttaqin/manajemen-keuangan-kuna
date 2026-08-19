@@ -25,7 +25,7 @@ class ManageMenu extends Component
     public $statusFilter = 'all';
 
     #[Url(as: 'period')]
-    public string $period = 'all_time';
+    public string $period = 'this_month';
 
     #[Url(as: 'from')]
     public ?string $from = null;
@@ -200,7 +200,7 @@ class ManageMenu extends Component
             $query->where('is_active', false);
         }
 
-        $menuItems = $query->orderBy('id', 'desc')->paginate(10);
+        $menuItems = $query->orderBy('id', 'desc')->paginate(8);
 
         // Sales Performance Metrics per Menu Item (Active Paid Income)
         $salesQuery = \App\Models\IncomeTransaction::where('record_status', 'active')

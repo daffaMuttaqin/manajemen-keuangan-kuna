@@ -393,9 +393,11 @@ class ExpenseTest extends TestCase
     // 5. EXPENSE TOTALS / OUTSTANDING PAYABLES
     // =========================================================================
 
-    public function test_unpaid_expense_does_not_appear_in_total_expenses(): void
+    public function test_unpaid_expense_appears_in_total_expenses_but_not_in_cash(): void
     {
-        // FT-004: unpaid expense must not affect cash metrics.
+        // FT-004 (updated): Since Phase 13 the "Total Expenses" card shows active
+        // paid + unpaid as an omset/payable metric. Unpaid expenses still NEVER
+        // touch account balances (INV-004, tested separately).
         $user    = $this->makeUser();
         $service = app(ExpenseCalculationService::class);
 
@@ -404,7 +406,11 @@ class ExpenseTest extends TestCase
             $user
         );
 
-        $this->assertEquals('0', $service->calculateTotalExpenses());
+        // Total Expenses (omset) now includes active unpaid:
+        $this->assertEquals('50000.00', number_format((float) $service->calculateTotalExpenses(), 2, '.', ''));
+
+        // calculateUnpaidExpenses isolates the unpaid portion:
+        $this->assertEquals('50000.00', number_format((float) $service->calculateUnpaidExpenses(), 2, '.', ''));
     }
 
     public function test_paid_active_expense_appears_in_total_expenses(): void

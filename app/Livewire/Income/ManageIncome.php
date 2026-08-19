@@ -48,8 +48,10 @@ class ManageIncome extends Component
     #[Url(as: 'record')]
     public string $recordFilter = 'active';  // active | cancelled | all
 
+    public string $menuItemSearch = '';
+
     #[Url(as: 'period')]
-    public string $period = 'all_time';
+    public string $period = 'this_month';
 
     #[Url(as: 'from')]
     public ?string $from = null;
@@ -111,6 +113,11 @@ class ManageIncome extends Component
     public function updatedRecordFilter(): void
     {
         $this->resetPage();
+    }
+
+    public function updatedMenuItemSearch(): void
+    {
+        // No pagination reset needed for modal menu search
     }
 
     /**
@@ -328,6 +335,7 @@ class ManageIncome extends Component
         $this->description         = '';
         $this->account_id          = '';
         $this->payment_status      = 'unpaid';
+        $this->menuItemSearch      = '';
         $this->resetValidation();
     }
 
@@ -379,17 +387,33 @@ class ManageIncome extends Component
 
         $incomeTransactions = $query->orderBy('transaction_date', 'desc')
                                     ->orderBy('id', 'desc')
-                                    ->paginate(15);
+                                    ->paginate(8);
 
-        $activeMenuItems  = MenuItem::where('is_active', true)->orderBy('name')->get();
-        $activeAccounts   = Account::where('is_active', true)->orderBy('name')->get();
-        $totalIncome      = (float) app(IncomeCalculationService::class)->calculateRevenue($fromDate, $toDate);
+        $activeMenuItems = MenuItem::where('is_active', true)->orderBy('name')->get();
+        $filteredMenuItems = $activeMenuItems;
+        if (trim($this->menuItemSearch) !== '') {
+            $searchTerm = strtolower(trim($this->menuItemSearch));
+            $filteredMenuItems = $activeMenuItems->filter(function ($item) use ($searchTerm) {
+                if ($this->menu_item_id && (int) $item->id === (int) $this->menu_item_id) {
+                    return true;
+                }
+                return str_contains(strtolower($item->name), $searchTerm) || str_contains(strtolower($item->category), $searchTerm);
+            })->values();
+        }
+
+        $activeAccounts = Account::where('is_active', true)->orderBy('name')->get();
+        // Total Incomes includes all active income (paid + unpaid) matching calculateTotalOmset
+        $totalIncome  = (float) app(IncomeCalculationService::class)->calculateTotalOmset($fromDate, $toDate);
+        // Unpaid Incomes includes active unpaid income
+        $unpaidIncome = (float) app(IncomeCalculationService::class)->calculateUnpaidRevenue($fromDate, $toDate);
 
         return view('livewire.income.manage-income', [
             'incomeTransactions' => $incomeTransactions,
             'activeMenuItems'    => $activeMenuItems,
+            'filteredMenuItems'  => $filteredMenuItems,
             'activeAccounts'     => $activeAccounts,
             'totalIncome'        => $totalIncome,
+            'unpaidIncome'       => $unpaidIncome,
             'activePeriod'       => $activePeriod,
             'fromDate'           => $fromDate,
             'toDate'             => $toDate,

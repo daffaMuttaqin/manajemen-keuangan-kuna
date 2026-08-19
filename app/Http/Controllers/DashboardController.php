@@ -79,11 +79,14 @@ class DashboardController extends Controller
         $totalRevenue      = (float) $incomeService->calculateTotalOmset($fromDate, $toDate);
         // unpaidRevenue = active + unpaid portion — not yet collected
         $unpaidRevenue     = (float) $incomeService->calculateUnpaidRevenue($fromDate, $toDate);
+        // totalExpenses = all active expenses (paid + unpaid) — presentation metric only
         $totalExpenses     = (float) $expenseService->calculateTotalExpenses($fromDate, $toDate);
+        // unpaidExpenses = active + unpaid portion — not yet paid
+        $unpaidExpenses    = (float) $expenseService->calculateUnpaidExpenses($fromDate, $toDate);
         $profitEligibleExp = (float) $expenseService->calculateProfitEligibleExpenses($fromDate, $toDate);
 
         // Net Profit = Paid Revenue - Profit-Eligible Expenses (Asset expenses excluded)
-        // Uses calculateRevenue() (paid-only) — unpaid income does NOT affect Net Profit
+        // Uses calculateRevenue() (paid-only) — unpaid income & unpaid expenses do NOT affect Net Profit
         $paidRevenue = (float) $incomeService->calculateRevenue($fromDate, $toDate);
         $netProfit   = $paidRevenue - $profitEligibleExp;
 
@@ -104,6 +107,7 @@ class DashboardController extends Controller
             'totalRevenue'         => $totalRevenue,
             'unpaidRevenue'        => $unpaidRevenue,
             'totalExpenses'        => $totalExpenses,
+            'unpaidExpenses'       => $unpaidExpenses,
             'profitEligibleExp'    => $profitEligibleExp,
             'netProfit'            => $netProfit,
             'period'               => $period,

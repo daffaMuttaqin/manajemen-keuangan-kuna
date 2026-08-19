@@ -31,7 +31,7 @@
     </div>
 
     {{-- Summary Cards Section --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Expenses</span>
@@ -44,7 +44,23 @@
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                Active paid expenses (includes Asset)
+                Active expense transactions (paid &amp; unpaid)
+            </p>
+        </div>
+
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Unpaid Expenses</span>
+                <div class="w-8 h-8 rounded bg-amber-500/10 flex items-center justify-center text-amber-400">
+                    <span class="material-symbols-outlined text-[20px]">pending</span>
+                </div>
+            </div>
+            <div class="text-xl font-bold text-amber-400 font-mono">
+                {{ \App\Support\Format::currency($unpaidExpenses) }}
+            </div>
+            <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                Active unpaid expense transactions
             </p>
         </div>
     </div>

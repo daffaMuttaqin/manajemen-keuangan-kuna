@@ -103,7 +103,7 @@ class ManageAuditLogs extends Component
             $query->where('auditable_type', $this->auditable_type);
         }
 
-        $auditLogs = $query->orderBy('id', 'desc')->paginate(15);
+        $auditLogs = $query->orderBy('id', 'desc')->paginate(8);
         $users = User::orderBy('name')->get();
         $selectedLog = $this->selectedLogId ? AuditLog::with(['user', 'auditable'])->find($this->selectedLogId) : null;
 

@@ -46,7 +46,7 @@ class ManageExpense extends Component
     public string $recordFilter = 'active';  // active | cancelled | all
 
     #[Url(as: 'period')]
-    public string $period = 'all_time';
+    public string $period = 'this_month';
 
     #[Url(as: 'from')]
     public ?string $from = null;
@@ -353,16 +353,18 @@ class ManageExpense extends Component
 
         $expenseTransactions = $query->orderBy('transaction_date', 'desc')
                                      ->orderBy('id', 'desc')
-                                     ->paginate(15);
+                                     ->paginate(8);
 
         $activeAccounts = Account::where('is_active', true)->orderBy('name')->get();
         $totalExpenses  = (float) app(ExpenseCalculationService::class)->calculateTotalExpenses($fromDate, $toDate);
+        $unpaidExpenses = (float) app(ExpenseCalculationService::class)->calculateUnpaidExpenses($fromDate, $toDate);
 
         return view('livewire.expense.manage-expense', [
             'expenseTransactions'  => $expenseTransactions,
             'activeAccounts'       => $activeAccounts,
             'expenseCategories'    => ExpenseTransaction::CATEGORIES,
             'totalExpenses'        => $totalExpenses,
+            'unpaidExpenses'       => $unpaidExpenses,
             'activePeriod'         => $activePeriod,
             'fromDate'             => $fromDate,
             'toDate'               => $toDate,

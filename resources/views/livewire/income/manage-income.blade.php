@@ -31,7 +31,7 @@
     </div>
 
     {{-- Summary Cards Section --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Incomes</span>
@@ -44,7 +44,23 @@
             </div>
             <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                Active paid income transactions
+                Active income transactions (paid &amp; unpaid)
+            </p>
+        </div>
+
+        <div class="bg-surface-container-low border border-outline-variant rounded-lg p-5">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Unpaid Incomes</span>
+                <div class="w-8 h-8 rounded bg-amber-500/10 flex items-center justify-center text-amber-400">
+                    <span class="material-symbols-outlined text-[20px]">schedule</span>
+                </div>
+            </div>
+            <div class="text-xl font-bold text-amber-400 font-mono">
+                {{ \App\Support\Format::currency($unpaidIncome) }}
+            </div>
+            <p class="text-xs text-on-surface-variant/70 mt-2 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                Active unpaid income transactions
             </p>
         </div>
     </div>
@@ -108,24 +124,141 @@
                             </div>
                         </div>
 
-                        {{-- Menu Item --}}
+                        {{-- Searchable Menu Item Combobox (Alpine.js) --}}
                         <div>
-                            <label for="menu_item_id" class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+                            <label class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider">
                                 Menu Item <span class="text-error">*</span>
                             </label>
-                            <select id="menu_item_id"
-                                    wire:model.live="menu_item_id"
-                                    class="w-full h-10 bg-background border @error('menu_item_id') border-error @else border-outline-variant @enderror text-on-surface rounded px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none">
-                                <option value="">— Select a Menu Item —</option>
-                                @foreach($activeMenuItems as $item)
-                                    <option value="{{ $item->id }}">
-                                        {{ $item->name }} ({{ $item->category }}) — {{ \App\Support\Format::currency($item->current_price) }}
-                                    </option>
-                                @endforeach
-                            </select>
+
+                            @php
+                                $menuItemsJson = $activeMenuItems->map(fn($m) => [
+                                    'id'       => $m->id,
+                                    'name'     => $m->name,
+                                    'category' => $m->category,
+                                    'price'    => \App\Support\Format::currency($m->current_price),
+                                ])->values()->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+                                $selectedItemForDisplay = $activeMenuItems->firstWhere('id', (int)($menu_item_id ?: 0));
+                            @endphp
+
+                            <div
+                                x-data="{
+                                    open: false,
+                                    search: '',
+                                    selectedId: '{{ $menu_item_id }}',
+                                    selectedLabel: @js($selectedItemForDisplay ? $selectedItemForDisplay->name . ' (' . $selectedItemForDisplay->category . ')' : ''),
+                                    items: {{ $menuItemsJson }},
+                                    get filtered() {
+                                        if (this.search.trim() === '') return this.items;
+                                        const q = this.search.toLowerCase();
+                                        return this.items.filter(i =>
+                                            i.name.toLowerCase().includes(q) ||
+                                            i.category.toLowerCase().includes(q)
+                                        );
+                                    },
+                                    select(item) {
+                                        this.selectedId    = String(item.id);
+                                        this.selectedLabel = item.name + ' (' + item.category + ')';
+                                        this.search = '';
+                                        this.open   = false;
+                                        $wire.set('menu_item_id', String(item.id));
+                                    },
+                                    clear() {
+                                        this.selectedId    = '';
+                                        this.selectedLabel = '';
+                                        this.search = '';
+                                        $wire.set('menu_item_id', '');
+                                    }
+                                }"
+                                @click.away="open = false"
+                                class="relative"
+                            >
+                                {{-- Trigger Button --}}
+                                <button
+                                    type="button"
+                                    id="menu-item-combobox-trigger"
+                                    @click="open = !open; if(open) $nextTick(() => $refs.menuSearch.focus())"
+                                    :class="open ? 'border-primary ring-1 ring-primary' : '{{ $errors->has('menu_item_id') ? 'border-error' : 'border-outline-variant' }}'"
+                                    class="w-full h-10 bg-background border text-on-surface rounded px-3 text-sm text-left flex items-center justify-between gap-2 transition outline-none"
+                                >
+                                    <span
+                                        x-text="selectedLabel || '— Select Menu Item —'"
+                                        :class="selectedLabel ? 'text-on-surface' : 'text-on-surface-variant/50'"
+                                        class="truncate"
+                                    ></span>
+                                    <span class="flex items-center gap-1 flex-shrink-0">
+                                        <span
+                                            x-show="selectedId"
+                                            @click.stop="clear()"
+                                            class="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-error transition cursor-pointer"
+                                            title="Clear selection"
+                                        >close</span>
+                                        <span
+                                            class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200"
+                                            :class="open ? 'rotate-180' : ''"
+                                        >expand_more</span>
+                                    </span>
+                                </button>
+
+                                {{-- Dropdown Panel --}}
+                                <div
+                                    x-show="open"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                    x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                                    class="absolute z-40 w-full mt-1 bg-surface-container border border-outline-variant rounded-lg shadow-xl overflow-hidden"
+                                    style="display: none;"
+                                >
+                                    {{-- Search inside dropdown --}}
+                                    <div class="p-2 border-b border-outline-variant/60">
+                                        <div class="relative">
+                                            <!-- <span class=" absolute left-2.5 top-1/2 -translate-y-1/2 text-[15px] text-on-surface-variant pointer-events-none"></span> -->
+                                            <input
+                                                type="text"
+                                                x-ref="menuSearch"
+                                                x-model="search"
+                                                @keydown.escape="open = false"
+                                                placeholder="Search menu item…"
+                                                id="menu-item-search-input"
+                                                class="w-full h-8 bg-background border border-outline-variant text-on-surface rounded pl-8 pr-3 text-xs focus:border-primary focus:ring-1 focus:ring-primary outline-none placeholder:text-on-surface-variant/50"
+                                            >
+                                        </div>
+                                    </div>
+
+                                    {{-- Item list --}}
+                                    <ul class="max-h-52 overflow-y-auto py-1" role="listbox" aria-label="Menu items">
+                                        <template x-if="filtered.length === 0">
+                                            <li class="px-3 py-4 text-xs text-center text-on-surface-variant/60 italic">
+                                                No menu items match "<span x-text="search"></span>"
+                                            </li>
+                                        </template>
+                                        <template x-for="item in filtered" :key="item.id">
+                                            <li
+                                                role="option"
+                                                :aria-selected="selectedId === String(item.id)"
+                                                @click="select(item)"
+                                                :class="selectedId === String(item.id)
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : 'text-on-surface hover:bg-surface-container-high'"
+                                                class="px-3 py-2 text-sm cursor-pointer flex items-center justify-between gap-2 transition"
+                                            >
+                                                <span>
+                                                    <span x-text="item.name" class="font-medium"></span>
+                                                    <span x-text="' (' + item.category + ')'" class="text-xs text-on-surface-variant ml-1"></span>
+                                                </span>
+                                                <span x-text="item.price" class="text-xs font-mono text-primary flex-shrink-0"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+
                             @error('menu_item_id')
                                 <p class="text-xs text-error mt-1">{{ $message }}</p>
                             @enderror
+
                             @if($menu_item_id)
                                 @php $selectedItem = $activeMenuItems->firstWhere('id', (int)$menu_item_id); @endphp
                                 @if($selectedItem)

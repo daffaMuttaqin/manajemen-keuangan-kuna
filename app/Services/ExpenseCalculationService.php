@@ -303,12 +303,11 @@ class ExpenseCalculationService
     }
 
     /**
-     * Calculate total expenses for active, paid expense transactions.
+     * Calculate total expenses for active expense transactions (paid + unpaid).
      *
-     * Total Expenses = SUM(amount) WHERE record_status='active' AND payment_status='paid'
-     * Filtered by optional date range.
-     *
-     * Used by dashboard and future reporting modules.
+     * Total Expenses = SUM(amount) WHERE record_status='active'
+     * (payment_status = 'paid' OR payment_status = 'unpaid')
+     * Cancelled expenses are excluded.
      *
      * @param string|null $from  Y-m-d
      * @param string|null $to    Y-m-d
@@ -316,8 +315,57 @@ class ExpenseCalculationService
      */
     public function calculateTotalExpenses(?string $from = null, ?string $to = null): string
     {
+        $query = ExpenseTransaction::where('record_status', 'active');
+
+        if ($from !== null) {
+            $query->where('transaction_date', '>=', $from);
+        }
+
+        if ($to !== null) {
+            $query->where('transaction_date', '<=', $to);
+        }
+
+        return (string) ($query->sum('amount') ?? '0');
+    }
+
+    /**
+     * Calculate total paid expenses for active expense transactions.
+     *
+     * Total Paid Expenses = SUM(amount) WHERE record_status='active' AND payment_status='paid'
+     *
+     * @param string|null $from  Y-m-d
+     * @param string|null $to    Y-m-d
+     * @return string
+     */
+    public function calculatePaidExpenses(?string $from = null, ?string $to = null): string
+    {
         $query = ExpenseTransaction::where('record_status', 'active')
                                    ->where('payment_status', 'paid');
+
+        if ($from !== null) {
+            $query->where('transaction_date', '>=', $from);
+        }
+
+        if ($to !== null) {
+            $query->where('transaction_date', '<=', $to);
+        }
+
+        return (string) ($query->sum('amount') ?? '0');
+    }
+
+    /**
+     * Calculate total unpaid expenses for active expense transactions within an optional date range.
+     *
+     * Total Unpaid Expenses = SUM(amount) WHERE record_status='active' AND payment_status='unpaid'
+     *
+     * @param string|null $from  Y-m-d
+     * @param string|null $to    Y-m-d
+     * @return string
+     */
+    public function calculateUnpaidExpenses(?string $from = null, ?string $to = null): string
+    {
+        $query = ExpenseTransaction::where('record_status', 'active')
+                                   ->where('payment_status', 'unpaid');
 
         if ($from !== null) {
             $query->where('transaction_date', '>=', $from);
