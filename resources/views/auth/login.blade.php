@@ -24,10 +24,12 @@
             <!-- Brand -->
             <div class="text-center mb-8">
 
-                <div class="mx-auto mb-5 w-12 h-12 rounded bg-primary-container flex items-center justify-center">
-                    <span class="text-2xl font-semibold text-on-primary-container">
-                        K
-                    </span>
+                <div class="mx-auto mb-5 w-12 h-12 rounded  flex items-center justify-center">
+                    <img
+                        src="{{ asset('images/logo-kuna.png') }}"
+                        alt="Kuna Patisserie"
+                        class="w-full h-full object-cover"
+                    >
                 </div>
 
                 <h1 class="text-xl font-semibold text-primary">
