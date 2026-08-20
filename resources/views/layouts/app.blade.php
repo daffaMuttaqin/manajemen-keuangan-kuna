@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Kuna Patisserie Finance') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-kuna.png') }}">
+
+
+    <!-- <title>{{ config('app.name', 'Kuna Patisserie Finance') }}</title> -->
+     <title>Kuna Finance</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,9 +22,14 @@
     <!-- Mobile Header -->
     <header class="md:hidden bg-surface-container-low border-b border-outline-variant p-4 flex items-center justify-between z-30">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center font-bold text-on-primary-container">
+            <!-- <div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center font-bold text-on-primary-container">
                 KF
-            </div>
+            </div> -->
+            <img
+                src="{{ asset('images/logo-kuna.png') }}"
+                alt="Kuna Patisserie"
+                class="w-8 h-8 object-cover"
+            >
             <span class="font-semibold text-primary">Kuna Finance</span>
         </div>
         <button id="mobileMenuBtn" aria-label="Toggle navigation menu" class="p-2 text-on-surface-variant hover:text-primary focus:outline-none">
@@ -38,7 +47,7 @@
                 </div> -->
                 <div class="w-10 h-10 rounded flex items-center justify-center overflow-hidden shadow-sm">
     <img
-        src="{{ asset('images/logo-kuna.jpeg') }}"
+        src="{{ asset('images/logo-kuna.png') }}"
         alt="Kuna Patisserie"
         class="w-full h-full object-cover"
     >
