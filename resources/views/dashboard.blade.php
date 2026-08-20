@@ -44,7 +44,7 @@
                            name="to"
                            value="{{ $toDate }}"
                            class="bg-transparent text-on-surface text-xs border-none p-0 focus:ring-0 outline-none w-28">
-                    <button type="submit" class="ml-1 px-2 py-0.5 bg-primary-container text-primary font-semibold rounded hover:bg-primary/20 text-[11px]">
+                    <button type="submit" class="ml-1 px-2 py-0.5 bg-primary-container text-white font-semibold rounded hover:bg-primary/20 text-[11px]">
                         Apply
                     </button>
                 </div>
